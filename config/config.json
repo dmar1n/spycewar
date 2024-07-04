@@ -1,0 +1,17 @@
+{
+    "game": {
+        "screen_size": [
+            600,
+            800
+        ]
+    },
+    "states": {
+        "intro": {
+            "text": "Spacewar! Press any key to continue.",
+            "position": [
+                100,
+                200
+            ]
+        }
+    }
+}
