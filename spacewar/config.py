@@ -7,6 +7,8 @@ import sys
 from importlib import resources
 from pathlib import Path
 
+from loguru import logger
+
 
 def cfg(*args: str) -> dict:
     """Helper method to get a configuration value using a path of keys.
@@ -67,7 +69,7 @@ class Config:
     def __get_internal_path(self) -> Path:
         """Get the internal path of the configuration file."""
 
-        return Path(resources.files(Config.__internal_path).joinpath(Config.__filename).name)
+        return Path(str(resources.files(Config.__internal_path).joinpath(Config.__filename)))
 
     def __load_config(self) -> None:
         """Reload the configuration from the file."""
@@ -78,7 +80,9 @@ class Config:
     def __load_config_from_json(self, file_path: Path) -> None:
         """Load the configuration from a file."""
 
-        with open(file_path, encoding="utf_8") as file:
+        logger.info(f"Loading configuration from: {file_path}")
+
+        with open(Path(file_path), encoding="utf_8") as file:
             self.__settings = json.load(file)
 
 
