@@ -168,7 +168,7 @@ repos:
         files: "(spacewar)/"
         args:
           - "--max-line-length=120"
-          - "--disable=E0401,C0413" # https://pylint.readthedocs.io/en/stable/index.html
+          - "--disable=E0401,C0413,R0903" # https://pylint.readthedocs.io/en/stable/index.html
           - "--good-names=i, j, k, ex, Run, df, mt, id, ax, pe, qc, s3"
         exclude: "tests/"
 

@@ -4,13 +4,16 @@ from __future__ import annotations
 
 import json
 import sys
+from functools import lru_cache
 from importlib import resources
 from pathlib import Path
+from typing import Any
 
 from loguru import logger
 
 
-def cfg(*args: str) -> dict:
+@lru_cache
+def get_cfg(*args: str) -> Any:
     """Helper method to get a configuration value using a path of keys.
 
     Example:
@@ -20,10 +23,14 @@ def cfg(*args: str) -> dict:
     Args:
         *args: The keys of the configuration path.
     """
-    data = Config.get_instance().data
-    for arg in args:
-        data = data[arg]
-    return data
+    try:
+        data = Config.get_instance().data
+        for arg in args:
+            data = data[arg]
+        return data
+    except KeyError as e:
+        logger.error(f"Configuration key not found: {e} (from path: {args})")
+        raise
 
 
 class Config:
@@ -95,7 +102,7 @@ def main() -> int:
     print(config.data)
     config.reload()
     print(config.data)
-    print(cfg("fps"))
+    print(get_cfg("fps"))
     return 0
 
 

@@ -2,8 +2,8 @@
 
 from abc import ABC, abstractmethod
 
-import pygame
 from pygame import Surface
+from pygame.event import Event
 
 from spacewar.enums.states import GameState
 
@@ -33,7 +33,7 @@ class State(ABC):
         """Abstract method to be implemented by subclasses for actions to perform when exiting the state."""
 
     @abstractmethod
-    def handle_input(self, event: pygame.event.Event) -> None:
+    def handle_input(self, event: Event) -> None:
         """Abstract method to be implemented by subclasses for handling input events.
 
         Args:
@@ -42,7 +42,7 @@ class State(ABC):
         """
 
     @abstractmethod
-    def process_events(self, event: pygame.event.Event) -> None:
+    def process_events(self, event: Event) -> None:
         """Processes Pygame events."""
 
     @abstractmethod

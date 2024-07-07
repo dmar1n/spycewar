@@ -5,9 +5,12 @@ It extends the Pygame sprite group class to add game-specific functionality.
 
 import pygame
 from loguru import logger
+from pygame import Surface
+from pygame.event import Event
+from pygame.sprite import Group
 
 
-class RenderGroup(pygame.sprite.Group):
+class RenderGroup(Group):
     """A custom group class for managing and rendering sprites.
 
     This class extends pygame.sprite.Group to add game-specific functionality for handling input,
@@ -32,7 +35,7 @@ class RenderGroup(pygame.sprite.Group):
         for sprite in self.sprites():
             sprite.handle_input(key, is_pressed)
 
-    def process_events(self, event: pygame.event) -> None:
+    def process_events(self, event: Event) -> None:
         """Passes Pygame events to all sprites in the group.
 
         Iterates through all sprites, calling their process_events method.
@@ -43,7 +46,7 @@ class RenderGroup(pygame.sprite.Group):
         for sprite in self.sprites():
             sprite.process_events(event)
 
-    def render(self, surface_dst: pygame.Surface) -> None:
+    def render(self, surface_dst: Surface) -> None:
         """Renders all sprites in the group to the given surface.
 
         Iterates through all sprites, calling their render method.
