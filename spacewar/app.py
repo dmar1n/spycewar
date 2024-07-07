@@ -4,8 +4,13 @@ It sets up the game window, manages game states, and controls the game loop.
 """
 
 import pygame
+from loguru import logger
+from pygame.event import Event
+from pygame.locals import DOUBLEBUF, K_ESCAPE, KEYDOWN, QUIT
+from pygame.time import Clock
 
-from spacewar.config import cfg
+from spacewar.config import get_cfg
+from spacewar.constants import GAME_NAME
 from spacewar.states.state_manager import StateManager
 
 
@@ -20,12 +25,13 @@ class App:
     """
 
     def __init__(self) -> None:
+        logger.info("Initializing game...")
         pygame.init()
-        self.__screen = pygame.display.set_mode(cfg("game", "screen_size"), pygame.RESIZABLE, 32)
-        pygame.display.set_caption("Spacewar!")
-        pygame.mouse.set_visible(False)
+        # pygame.event.set_blocked(None)
+        # pygame.event.set_allowed([KEYDOWN, KEYUP, QUIT])
 
-        self.__clock = pygame.time.Clock()
+        self.__screen = self.__initialise_screen()
+        self.__clock = Clock()
         self.__state_manager = StateManager()
         self.__running = False
 
@@ -33,8 +39,9 @@ class App:
         """Runs the game loop."""
 
         self.__running = True
+        logger.info("Starting game loop...")
 
-        while self.__running:
+        while self.is_running:
             delta_time = self.__clock.tick(60)  # 60 fps = 1000 / 60 = 16 msecs
             self.__process_events()
             self.__update(delta_time)
@@ -43,29 +50,43 @@ class App:
         self.__release()
 
     @property
-    def running(self) -> bool:
+    def is_running(self) -> bool:
         """Indicates whether the game is running or not."""
         return self.__running
+
+    def __initialise_screen(self) -> pygame.Surface:
+        """Initialises the game window with the screen size, resizable, and 32-bit color (with transparency)."""
+
+        logger.info("Setting up game window...")
+        flags = DOUBLEBUF  # FULLSCREEN | DOUBLEBUF
+        resolution = get_cfg("game", "screen_size")
+        screen = pygame.display.set_mode(resolution, flags, 32)
+        pygame.display.set_caption(GAME_NAME)  # Set the window title
+        pygame.mouse.set_visible(False)
+        return screen
 
     def __process_events(self) -> None:
         """Handles all events captured from the Pygame event queue.
 
-        This includes checking for the QUIT event or the ESCAPE key press to stop the game, and
-        passing other events to the state manager for further processing.
+        This includes checking for the quitting events to stop the game, and passing other events
+        to the state manager for further processing.
         """
 
         for event in pygame.event.get():
-            if (
-                event.type != pygame.QUIT
-                and event.type == pygame.KEYDOWN
-                and event.key == pygame.K_ESCAPE
-                or event.type == pygame.QUIT
-            ):
-                self.__running = False
+            self.__handle_quit_event(event)
             self.__state_manager.process_events(event)
 
+    def __handle_quit_event(self, event: Event) -> None:
+        """Handles events to stop the game.
+
+        Args:
+            event: a Pygame event to be handled.
+        """
+        if event.type != QUIT and event.type == KEYDOWN and event.key == K_ESCAPE or event.type == QUIT:
+            self.__running = False
+
     def __update(self, delta_time: int) -> None:
-        """Updates the game state.
+        """Updates the game objects.
 
         Calls the update method of the state manager with the time passed since the last frame.
 
@@ -94,3 +115,4 @@ class App:
 
         self.__state_manager.release()
         pygame.quit()
+        logger.info("Game stopped.")

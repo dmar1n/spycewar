@@ -1,9 +1,11 @@
 """Module for managing game states."""
 
 import pygame
+from loguru import logger
+from pygame.locals import USEREVENT
 
 from spacewar.enums.states import GameState
-from spacewar.states.gameplay import GamePlay
+from spacewar.states.gameplay import Gameplay
 from spacewar.states.intro import Intro
 
 
@@ -20,7 +22,7 @@ class StateManager:
         """Initializes the StateManager with predefined states."""
         self.__states = {
             GameState.INTRO: Intro(),
-            GameState.GAMEPLAY: GamePlay(),
+            GameState.GAMEPLAY: Gameplay(),
         }
 
         self.__current_state_name = GameState.INTRO
@@ -35,7 +37,8 @@ class StateManager:
         Args:
             event: The event to process.
         """
-        if event.type == pygame.USEREVENT:
+        if event.type == USEREVENT:
+            logger.info(f"Processing user event: {event}")
             self.__current_state.process_events(event)
         else:
             self.__current_state.handle_input(event)

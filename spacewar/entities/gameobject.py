@@ -1,0 +1,89 @@
+"""Module for the game object class."""
+
+from abc import ABC, abstractmethod
+
+import pygame
+from pygame import Surface, Vector2
+from yaml import Event
+
+
+class GameObject(pygame.sprite.Sprite, ABC):
+    """An abstract class to represent a virtual game object.
+
+    Attributes
+    ----------
+    _position : pygame.math.Vector2
+        position of the game object in the screen
+    _image : pygame.Surface
+        loaded image of the game object
+
+    Methods
+    -------
+    handle_input(key, is_pressed):
+        Abstract, handles the input of the player
+    process_events(event):
+        Abstract, process events for other parts of the app
+    update(delta_time):
+        Abstract, updates the game object for a period of time
+    release():
+        Abstract, releases any resource from the game object
+    _in_bounds(distance):
+        Checks if game object is inside the screen
+    """
+
+    def __init__(self) -> None:
+        """Abstract, Constructs the game object class."""
+
+        super().__init__()
+        self._position = pygame.math.Vector2(0.0, 0.0)
+        self.rect = pygame.Rect(0, 0, 0, 0)
+
+    @abstractmethod
+    def handle_input(self, key: int, is_pressed: bool) -> None:
+        """Abstract, handles the input of the player.
+
+        Parameters
+        ----------
+        key : pygame.key
+            key pressed by the player
+        is_pressed : boolean
+            if key is pressed or released
+        """
+
+    @abstractmethod
+    def process_events(self, event: Event) -> None:
+        """Process events for other parts of the app.
+
+        Args:
+            event: the event to process.
+        """
+
+    @abstractmethod
+    def update(self, delta_time: float) -> None:
+        """Updates the game object for a period of time.
+
+        Args:
+            delta_time: _description_
+        """
+
+    @abstractmethod
+    def render(self, surface_dst: Surface) -> None:
+        """Renders the game object to the screen."""
+
+    @abstractmethod
+    def release(self) -> None:
+        """Releases game object resources."""
+
+    @property
+    def pos(self) -> Vector2:
+        """Property to get the position of the game object."""
+
+        return self._position
+
+    def rect_sync(self) -> None:
+        """Syncs the rect position with the game object position."""
+
+        self.rect.x = self._position.x
+        self.rect.y = self._position.y
+        self.rect.height = self.image.get_height()
+        self.rect.width = self.image.get_width()
