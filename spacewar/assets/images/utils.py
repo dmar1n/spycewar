@@ -19,4 +19,4 @@ def load_image(file_path: Path | Traversable) -> Surface:
     """
 
     with resources.as_file(file_path) as file:
-        return pygame.image.load(file).convert_alpha()
+        return pygame.image.load(file).convert()

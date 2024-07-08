@@ -4,7 +4,6 @@ import math
 from functools import cached_property
 
 import pygame
-from loguru import logger
 from pygame import Surface
 from pygame.event import Event
 from pygame.locals import K_DOWN, K_LEFT, K_RIGHT, K_UP, USEREVENT, K_a, K_d, K_s, K_w
@@ -54,7 +53,7 @@ class Player1(GameObject):
         self.__rotated_image = self.image  # Cache the rotated image
         self.__last_angle = self.__state.angle
 
-        self.rect_sync()
+        # self.rect_sync()
 
     @cached_property
     def image(self) -> Surface:
@@ -82,7 +81,7 @@ class Player1(GameObject):
             self.__state.is_turning_left = is_pressed
         if key in [K_RIGHT, K_d]:
             self.__state.is_turning_right = is_pressed
-        if key in [K_UP, K_w]:  # and self.__cool_down <= 0.0:
+        if key in [K_UP, K_w] and self.__cooldown <= 0.0:
             self.__fire()
 
     def process_events(self, event: Event) -> None:
@@ -113,7 +112,7 @@ class Player1(GameObject):
         if self.__cooldown >= 0.0:
             self.__cooldown -= delta_time
 
-        self.rect_sync()
+        # self.rect_sync()
 
     def render(self, surface_dst: Surface) -> None:
         """Renders the player to the given surface at the player's position.
@@ -187,18 +186,22 @@ class Player1(GameObject):
             self.__state.angle += 360
 
     def __fire(self) -> None:
-        """Fires a projectile from the player's position."""
+        """Fires a projectile from the player's position.
 
-        logger.info("Player 1 fires...")
+        It resets the cooldown time between shots and creates a new projectile event to be
+        processed by the game.
+        """
+
         speed = get_cfg("entities", "projectiles", "player1", "speed")
+        self.__cooldown = get_cfg("entities", "projectiles", "player1", "cooldown")
 
         angle_radians = math.radians(self.__state.angle)
         direction_vector = -Vector2(math.sin(angle_radians), math.cos(angle_radians))
         projectile_velocity = self.__state.velocity + direction_vector * speed
 
-        fire_event = Event(USEREVENT, event=Events.PLAYER1_FIRES, pos=self.__state.position, vel=projectile_velocity)
+        fire_position = direction_vector * (self.image.get_height() // 2) + self.__state.position
+        fire_event = Event(USEREVENT, event=Events.PLAYER1_FIRES, pos=fire_position, vel=projectile_velocity)
         pygame.event.post(fire_event)
-        logger.info(f"Player 1 fired at {self.__state.position} with velocity {self.__state.velocity * speed}")
 
     def __update_velocity(self) -> None:
         """Updates the player's velocity based on the current angle and acceleration.

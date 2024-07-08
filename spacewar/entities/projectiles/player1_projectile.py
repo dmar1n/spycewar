@@ -22,6 +22,10 @@ class Player1Projectile(Projectile):
         if Player1Projectile.__image is None:
             Player1Projectile.__image = self.__load_projectile()
 
+        position = (
+            position.x - Player1Projectile.__image.get_width() / 2,
+            position.y - Player1Projectile.__image.get_height() / 2,
+        )
         super().__init__(position, velocity)
 
     @property

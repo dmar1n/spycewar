@@ -103,7 +103,7 @@ class App:
         updates the display.
         """
 
-        self.__screen.fill((0, 0, 0))
+        self.__screen.fill((100, 100, 50))
         self.__state_manager.render(self.__screen)
         pygame.display.update()
 

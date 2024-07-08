@@ -1,9 +1,9 @@
 """Module for the gameplay state in the game's state machine."""
 
-import pygame
 from loguru import logger
 from pygame import Surface, Vector2
 from pygame.event import Event
+from pygame.locals import KEYDOWN, KEYUP
 
 from spacewar.entities.players.player import Player1
 from spacewar.entities.projectiles.factory import ProjectileFactory
@@ -51,9 +51,9 @@ class Gameplay(State):
         Args:
             event: The input event to handle.
         """
-        if event.type == pygame.KEYDOWN:
+        if event.type == KEYDOWN:
             self.__players.handle_input(event.key, True)
-        elif event.type == pygame.KEYUP:
+        elif event.type == KEYUP:
             self.__players.handle_input(event.key, False)
 
     def process_events(self, event: Event) -> None:
@@ -82,6 +82,7 @@ class Gameplay(State):
         Args:
             surface_dst: The surface to render the game entities to.
         """
+
         self.__players.render(surface_dst)
         self.__player1_projectiles.render(surface_dst)
 
@@ -112,8 +113,6 @@ class Gameplay(State):
             position: The position to spawn the projectile at.
             velocity: The velocity of the projectile.
         """
-
-        logger.info("Spawning projectile...")
 
         projectile = ProjectileFactory.create_projectile(projectile_type, position, velocity)
 

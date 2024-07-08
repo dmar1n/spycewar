@@ -22,7 +22,7 @@ class Projectile(GameObject):
         super().__init__()
         self.__position = Vector2(position)
         self.__velocity = Vector2(velocity)
-        self.rect_sync()
+        # self.rect_sync()
 
     def handle_input(self, key: int, is_pressed: bool) -> None:
         """Handles the input of the player.
@@ -51,7 +51,7 @@ class Projectile(GameObject):
 
         distance = self.__velocity * delta_time
         self.__position += distance
-        self.rect_sync()
+        # self.rect_sync()
 
     def render(self, surface_dst: Surface) -> None:
         """Renders the projectile to the given surface at the projectile's position."""

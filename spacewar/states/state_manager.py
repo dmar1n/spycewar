@@ -1,7 +1,6 @@
 """Module for managing game states."""
 
 import pygame
-from loguru import logger
 from pygame.locals import USEREVENT
 
 from spacewar.enums.states import GameState
@@ -38,7 +37,6 @@ class StateManager:
             event: The event to process.
         """
         if event.type == USEREVENT:
-            logger.info(f"Processing user event: {event}")
             self.__current_state.process_events(event)
         else:
             self.__current_state.handle_input(event)

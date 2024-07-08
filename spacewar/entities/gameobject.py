@@ -4,10 +4,11 @@ from abc import ABC, abstractmethod
 
 import pygame
 from pygame import Surface, Vector2
+from pygame.sprite import Sprite
 from yaml import Event
 
 
-class GameObject(pygame.sprite.Sprite, ABC):
+class GameObject(Sprite, ABC):
     """An abstract class to represent a virtual game object.
 
     Attributes
@@ -35,7 +36,7 @@ class GameObject(pygame.sprite.Sprite, ABC):
         """Abstract, Constructs the game object class."""
 
         super().__init__()
-        self._position = pygame.math.Vector2(0.0, 0.0)
+        # self._position = pygame.math.Vector2(0.0, 0.0)
         self.rect = pygame.Rect(0, 0, 0, 0)
 
     @abstractmethod
@@ -80,10 +81,10 @@ class GameObject(pygame.sprite.Sprite, ABC):
 
         return self._position
 
-    def rect_sync(self) -> None:
-        """Syncs the rect position with the game object position."""
+    # def rect_sync(self) -> None:
+    #     """Syncs the rect position with the game object position."""
 
-        self.rect.x = self._position.x
-        self.rect.y = self._position.y
-        self.rect.height = self.image.get_height()
-        self.rect.width = self.image.get_width()
+    #     self.rect.x = self._position.x
+    #     self.rect.y = self._position.y
+    #     self.rect.height = self.image.get_height()
+    #     self.rect.width = self.image.get_width()

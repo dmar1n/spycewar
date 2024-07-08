@@ -24,8 +24,9 @@
                     "spacewar.assets.images",
                     "projectile_p1.png"
                 ],
-                "speed": 0.5,
-                "cooldown": 300
+                "speed": 0.2,
+                "cooldown": 300,
+                "lifetime": 2000
             }
         },
         "ships": {
