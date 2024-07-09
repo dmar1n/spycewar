@@ -2,15 +2,17 @@
 
 from pygame import Vector2
 
-from spacewar.entities.projectiles.player1_projectile import Player1Projectile
-from spacewar.entities.projectiles.types import ProjectileType
+from spacewar.entities.players.enums import PlayerId
+from spacewar.entities.projectiles.player_projectile1 import PlayerProjectile1
+from spacewar.entities.projectiles.player_projectile2 import PlayerProjectile2
+from spacewar.entities.projectiles.projectile import Projectile
 
 
 class ProjectileFactory:
     """Represents a factory for creating projectiles."""
 
     @staticmethod
-    def create_projectile(projectile_type: ProjectileType, position: Vector2, velocity: Vector2) -> Player1Projectile:
+    def create_projectile(player: PlayerId, position: Vector2, velocity: Vector2) -> Projectile:
         """Creates a projectile of the given type at the given position.
 
         Args:
@@ -20,7 +22,8 @@ class ProjectileFactory:
         Returns:
             A new projectile of the given type at the given position.
         """
-        if projectile_type == ProjectileType.PLAYER1:
-            return Player1Projectile(position, velocity)
-
-        raise ValueError(f"Invalid projectile type: {projectile_type}")
+        if player == PlayerId.PLAYER1:
+            return PlayerProjectile1(position, velocity)
+        if player == PlayerId.PLAYER2:
+            return PlayerProjectile2(position, velocity)
+        raise ValueError(f"Invalid player id: {player}")

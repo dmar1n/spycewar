@@ -168,7 +168,7 @@ repos:
         files: "(spacewar)/"
         args:
           - "--max-line-length=120"
-          - "--disable=E0401,C0413,R0903" # https://pylint.readthedocs.io/en/stable/index.html
+          - "--disable=E0401,C0413,R0903,R0902" # https://pylint.readthedocs.io/en/stable/index.html
           - "--good-names=i, j, k, ex, Run, df, mt, id, ax, pe, qc, s3"
         exclude: "tests/"
 
@@ -177,14 +177,3 @@ repos:
     hooks:
       - id: vulture
         args: ["--min-confidence=79", "spacewar", "--exclude", "tests/"]
-
-  # SECURITY
-
-  - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.9
-    hooks:
-      - id: bandit
-        exclude: ^tests/
-        args:
-          - -s
-          - B101

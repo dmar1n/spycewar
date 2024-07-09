@@ -2,49 +2,44 @@
 
 import math
 from functools import cached_property
+from random import randint
 
 import pygame
+from loguru import logger
 from pygame import Surface
 from pygame.event import Event
-from pygame.locals import K_DOWN, K_LEFT, K_RIGHT, K_UP, USEREVENT, K_a, K_d, K_s, K_w
+from pygame.locals import USEREVENT
 from pygame.math import Vector2
 
 from spacewar.assets.fonts.utils import initialise_font, render_text
-from spacewar.config import get_cfg
 from spacewar.entities.gameobject import GameObject
+from spacewar.entities.players.controls import PlayerControls
+from spacewar.entities.players.enums import PlayerId
 from spacewar.entities.ships.specs import ShipSpecs
 from spacewar.entities.ships.state import ShipState
-from spacewar.events import Events
 
 
 #
-class Player1(GameObject):
+class Player(GameObject):
     """Represents the player object in the game.
 
     The player object is controlled by the user and can move around the screen, rotate, and shoot projectiles.
 
     Attributes:
-        __position: The player's position as a pygame Vector2.
-        __is_accelerating: A boolean indicating whether the player is accelerating or not.
-        __is_turning_left: A boolean indicating whether the player is turning left or not.
-        __is_turning_right: A boolean indicating whether the player is turning right or not.
-        __velocity: The player's velocity as a pygame Vector2.
-        __max_speed: The maximum speed of the player.
-        __current_speed: The current speed of the player.
-        __turning_speed: The speed at which the player can turn.
-        __acceleration: The acceleration of the player.
-        __cool_down: The cooldown time between shots.
-        __angle: The angle of the player.
-        __image: The player's image.
-        __rotated_image: The rotated player image.
-        __last_angle: The last angle of the player.
+        player: the player id of the player object.
+        state: the state of the player object.
+        specs: the specifications of the player object.
+        controls: the controls of the player object.
+        cooldown: the cooldown time between shots.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, player: PlayerId) -> None:
         super().__init__()
 
+        self.__player = player
         self.__state = ShipState()
-        self.__specs = ShipSpecs.load_ship_specs("player1")
+        self.__specs = ShipSpecs.load_ship_specs(player)
+        self.__controls = PlayerControls.load_controls(player)
 
         # Projectiles
         self.__cooldown = 0.0
@@ -52,6 +47,8 @@ class Player1(GameObject):
         # Caches
         self.__rotated_image = self.image  # Cache the rotated image
         self.__last_angle = self.__state.angle
+
+        logger.info(f"Player {player} created with specs: {self.__specs}")
 
         # self.rect_sync()
 
@@ -87,13 +84,13 @@ class Player1(GameObject):
             is_pressed: a boolean indicating whether the key is pressed or released.
         """
 
-        if key in [K_DOWN, K_s]:
+        if key == self.__controls.thrust:
             self.__state.is_accelerating = is_pressed
-        if key in [K_LEFT, K_a]:
+        if key == self.__controls.left:
             self.__state.is_turning_left = is_pressed
-        if key in [K_RIGHT, K_d]:
+        if key == self.__controls.right:
             self.__state.is_turning_right = is_pressed
-        if key in [K_UP, K_w] and self.cooldown <= 0.0 and is_pressed:
+        if key == self.__controls.fire and self.cooldown <= 0.0 and is_pressed:
             self.__fire()
 
     def process_events(self, event: Event) -> None:
@@ -137,7 +134,10 @@ class Player1(GameObject):
             surface_dst: The surface to render the player to.
         """
         if not self.__state.position:
-            self.__state.position = Vector2(surface_dst.get_width() // 3, surface_dst.get_height() // 2)
+            self.__state.position = Vector2(
+                randint(20, surface_dst.get_width() - 20),
+                randint(20, surface_dst.get_height()) - 20,
+            )
 
         self.__render_player_info(surface_dst)  # For debugging purposes
         self.__normalise_angle()
@@ -157,13 +157,15 @@ class Player1(GameObject):
             surface_dst: The surface to render the player's information to.
         """
 
+        x = 10 if self.__player == PlayerId.PLAYER1 else surface_dst.get_width() - 200
+
         font = initialise_font("eurostile.ttf", 14)
-        surface_dst.blit(render_text(font, "Player 1"), (10, 10))
-        surface_dst.blit(render_text(font, f"Speed: {self.__state.speed:.2f}"), (10, 30))
-        surface_dst.blit(render_text(font, f"Angle: {self.__state.angle:.2f}"), (10, 50))
-        surface_dst.blit(render_text(font, f"Position: {self.__state.position}"), (10, 90))
-        surface_dst.blit(render_text(font, f"Velocity: {self.__state.velocity}"), (10, 110))
-        surface_dst.blit(render_text(font, f"Cooldown: {self.cooldown:.2f}"), (10, 70))
+        surface_dst.blit(render_text(font, "Player 1"), (x, 10))
+        surface_dst.blit(render_text(font, f"Speed: {self.__state.speed:.2f}"), (x, 30))
+        surface_dst.blit(render_text(font, f"Angle: {self.__state.angle:.2f}"), (x, 50))
+        surface_dst.blit(render_text(font, f"Position: {self.__state.position}"), (x, 90))
+        surface_dst.blit(render_text(font, f"Velocity: {self.__state.velocity}"), (x, 110))
+        surface_dst.blit(render_text(font, f"Cooldown: {self.cooldown:.2f}"), (x, 70))
 
     def __wrap_position(self, surface_dst: Surface) -> None:
         """Wraps the player's position around the screen if it goes out of bounds.
@@ -203,16 +205,13 @@ class Player1(GameObject):
         It resets the cooldown time between shots and creates a new projectile event to be
         processed by the game.
         """
-
-        speed = get_cfg("entities", "projectiles", "player1", "speed")
-        self.cooldown = get_cfg("entities", "projectiles", "player1", "cooldown")
-
+        self.cooldown = self.__specs.projectile_cooldown
         angle_radians = math.radians(self.__state.angle)
         direction_vector = -Vector2(math.sin(angle_radians), math.cos(angle_radians))
-        projectile_velocity = self.__state.velocity + direction_vector * speed
+        projectile_velocity = self.__state.velocity + direction_vector * self.__specs.projectile_speed
 
         fire_position = direction_vector * (self.image.get_height() // 2) + self.__state.position
-        fire_event = Event(USEREVENT, event=Events.PLAYER1_FIRES, pos=fire_position, vel=projectile_velocity)
+        fire_event = Event(USEREVENT, event=self.__specs.fire_event, pos=fire_position, vel=projectile_velocity)
         pygame.event.post(fire_event)
 
     def __update_velocity(self) -> None:

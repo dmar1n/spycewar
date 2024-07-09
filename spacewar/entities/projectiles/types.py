@@ -6,5 +6,5 @@ from enum import Enum
 class ProjectileType(Enum):
     """Represents the different types of projectiles in the game."""
 
-    PLAYER1 = (0,)
-    PLAYER2 = 1
+    PLAYER1 = "player1"
+    PLAYER2 = "player2"
