@@ -1,9 +1,15 @@
 """Module for event types in the game."""
 
-from enum import Enum
+from enum import Enum, auto
 
 
 class Events(Enum):
-    """Represents the different types of events in the game."""
+    """Represents the different types of events in the game.
 
-    PLAYER1_FIRES = (0,)  # pos = position of projectile to spawn
+    Attributes:
+    `PLAYER1_FIRES`: Player 1 fires a projectile. Params: pos (position) and vel (velocity).
+    `PROJECTILE_OUT_OF_SCREEN`: A projectile went out of the screen. Params: projectile (projectile).
+    """
+
+    PLAYER1_FIRES = auto()
+    PROJECTILE_OUT_OF_SCREEN = auto()

@@ -4,10 +4,13 @@ from abc import ABC, abstractmethod
 
 import pygame
 from pygame import Surface, Vector2
+from pygame.sprite import Sprite
 from yaml import Event
 
+from spacewar.config import get_cfg
 
-class GameObject(pygame.sprite.Sprite, ABC):
+
+class GameObject(Sprite, ABC):
     """An abstract class to represent a virtual game object.
 
     Attributes
@@ -80,10 +83,32 @@ class GameObject(pygame.sprite.Sprite, ABC):
 
         return self._position
 
-    def rect_sync(self) -> None:
-        """Syncs the rect position with the game object position."""
+    def _in_bounds(self, distance: Vector2) -> bool:
+        """Checks if the game object is inside the screen.
 
-        self.rect.x = self._position.x
-        self.rect.y = self._position.y
-        self.rect.height = self.image.get_height()
-        self.rect.width = self.image.get_width()
+        Args:
+            distance: the distance to check if the game object is inside the screen.
+
+        Returns:
+            `True` if the game object is inside the screen, `False` otherwise.
+        """
+        new_pos = self._position + distance
+        width, height = get_cfg("game", "screen_size")
+
+        return new_pos.x >= 0 and new_pos.x <= width and new_pos.y >= 0 and new_pos.y <= height
+
+    def _is_alive(self) -> bool:
+        """Checks if the game object is alive.
+
+        Returns:
+            `True` if the game object is alive, `False` otherwise.
+        """
+        return True
+
+    # def rect_sync(self) -> None:
+    #     """Syncs the rect position with the game object position."""
+
+    #     self.rect.x = self._position.x
+    #     self.rect.y = self._position.y
+    #     self.rect.height = self.image.get_height()
+    #     self.rect.width = self.image.get_width()

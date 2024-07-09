@@ -33,8 +33,53 @@ def get_cfg(*args: str) -> Any:
         raise
 
 
+def set_cfg(*args: str, value: Any) -> None:
+    """Helper method to set a configuration value using a path of keys.
+
+    Example:
+        cfg("fps", value=30)
+        cfg("window", "width", value=600)
+
+    Args:
+        *args: The keys of the configuration path.
+        value: The value to set.
+    """
+    try:
+        get_cfg.cache_clear()
+        data = Config.get_instance().data
+        for arg in args[:-1]:
+            data = data[arg]
+        data[args[-1]] = value
+    except KeyError as e:
+        logger.error(f"Configuration key not found: {e} (from path: {args})")
+        raise
+
+
 class Config:
-    """Singleton class for configuration management."""
+    """Singleton class for configuration management.
+
+    Attributes:
+        __instance: The singleton instance of the class.
+        __internal_path: The internal path of the configuration file.
+        __filename: The name of the configuration file.
+        __settings: The configuration settings
+
+    Methods:
+        get_instance() -> Config:
+            Get the singleton instance.
+        data() -> dict:
+            Get the configuration settings.
+        data() -> None:
+            Set the configuration settings.
+        reload() -> None:
+            Reload the configuration from the file.
+        __get_internal_path() -> Path:
+            Get the internal path of the configuration file.
+        __load_config() -> None:
+            Reload the configuration from the file.
+        __load_config_from_json(file_path: Path) -> None:
+            Load the configuration
+    """
 
     __instance = None  # private class variable (not instance variable)
     __internal_path = "config"

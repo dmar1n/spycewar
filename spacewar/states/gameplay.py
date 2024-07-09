@@ -1,12 +1,13 @@
 """Module for the gameplay state in the game's state machine."""
 
-import pygame
 from loguru import logger
 from pygame import Surface, Vector2
 from pygame.event import Event
+from pygame.locals import KEYDOWN, KEYUP
 
 from spacewar.entities.players.player import Player1
 from spacewar.entities.projectiles.factory import ProjectileFactory
+from spacewar.entities.projectiles.projectile import Projectile
 from spacewar.entities.projectiles.types import ProjectileType
 from spacewar.entities.render_group import RenderGroup
 from spacewar.enums.states import GameState
@@ -51,9 +52,9 @@ class Gameplay(State):
         Args:
             event: The input event to handle.
         """
-        if event.type == pygame.KEYDOWN:
+        if event.type == KEYDOWN:
             self.__players.handle_input(event.key, True)
-        elif event.type == pygame.KEYUP:
+        elif event.type == KEYUP:
             self.__players.handle_input(event.key, False)
 
     def process_events(self, event: Event) -> None:
@@ -82,6 +83,7 @@ class Gameplay(State):
         Args:
             surface_dst: The surface to render the game entities to.
         """
+
         self.__players.render(surface_dst)
         self.__player1_projectiles.render(surface_dst)
 
@@ -104,6 +106,9 @@ class Gameplay(State):
         if event.event == Events.PLAYER1_FIRES:
             self.__spawn_projectile(ProjectileType.PLAYER1, event.pos, event.vel)
 
+        elif event.event == Events.PROJECTILE_OUT_OF_SCREEN:
+            self.__kill_projectile(event.projectile)
+
     def __spawn_projectile(self, projectile_type: ProjectileType, position: Vector2, velocity: Vector2) -> None:
         """Spawns a projectile of the given type at the specified position.
 
@@ -113,9 +118,20 @@ class Gameplay(State):
             velocity: The velocity of the projectile.
         """
 
-        logger.info("Spawning projectile...")
-
         projectile = ProjectileFactory.create_projectile(projectile_type, position, velocity)
 
         if projectile_type == ProjectileType.PLAYER1:
             self.__player1_projectiles.add(projectile)
+
+    def __kill_projectile(self, projectile: Projectile) -> None:
+        """Removes the given projectile from the game.
+
+        Args:
+            projectile: The projectile to remove.
+        """
+
+        if projectile in self.__player1_projectiles:
+            self.__player1_projectiles.remove(projectile)
+            del projectile
+        else:
+            logger.error("Trying to remove a projectile that is not in the game.")

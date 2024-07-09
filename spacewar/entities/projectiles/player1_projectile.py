@@ -13,15 +13,23 @@ class Player1Projectile(Projectile):
     """Represents a projectile fired by the player 1's ship.
 
     The velocity must be given by the player's ship, who knows the direction of the projectile.
+
+    The image is centred at the given position, so the position must be the center of the
+    projectile.
     """
 
     __image: Surface | None = None
+    __mid_width: int = 0
+    __mid_height: int = 0
 
     def __init__(self, position: Vector2, velocity: Vector2) -> None:
 
         if Player1Projectile.__image is None:
             Player1Projectile.__image = self.__load_projectile()
+            Player1Projectile.__mid_width = Player1Projectile.__image.get_width() / 2
+            Player1Projectile.__mid_height = Player1Projectile.__image.get_height() / 2
 
+        position = (position.x - self.__mid_width, position.y - self.__mid_height)
         super().__init__(position, velocity)
 
     @property
