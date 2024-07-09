@@ -7,6 +7,8 @@ from pygame import Surface, Vector2
 from pygame.sprite import Sprite
 from yaml import Event
 
+from spacewar.config import get_cfg
+
 
 class GameObject(Sprite, ABC):
     """An abstract class to represent a virtual game object.
@@ -36,7 +38,7 @@ class GameObject(Sprite, ABC):
         """Abstract, Constructs the game object class."""
 
         super().__init__()
-        # self._position = pygame.math.Vector2(0.0, 0.0)
+        self._position = pygame.math.Vector2(0.0, 0.0)
         self.rect = pygame.Rect(0, 0, 0, 0)
 
     @abstractmethod
@@ -80,6 +82,28 @@ class GameObject(Sprite, ABC):
         """Property to get the position of the game object."""
 
         return self._position
+
+    def _in_bounds(self, distance: Vector2) -> bool:
+        """Checks if the game object is inside the screen.
+
+        Args:
+            distance: the distance to check if the game object is inside the screen.
+
+        Returns:
+            `True` if the game object is inside the screen, `False` otherwise.
+        """
+        new_pos = self._position + distance
+        width, height = get_cfg("game", "screen_size")
+
+        return new_pos.x >= 0 and new_pos.x <= width and new_pos.y >= 0 and new_pos.y <= height
+
+    def _is_alive(self) -> bool:
+        """Checks if the game object is alive.
+
+        Returns:
+            `True` if the game object is alive, `False` otherwise.
+        """
+        return True
 
     # def rect_sync(self) -> None:
     #     """Syncs the rect position with the game object position."""

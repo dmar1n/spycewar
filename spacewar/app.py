@@ -6,7 +6,7 @@ It sets up the game window, manages game states, and controls the game loop.
 import pygame
 from loguru import logger
 from pygame.event import Event
-from pygame.locals import DOUBLEBUF, K_ESCAPE, KEYDOWN, QUIT
+from pygame.locals import DOUBLEBUF, K_ESCAPE, KEYDOWN, QUIT, RESIZABLE
 from pygame.time import Clock
 
 from spacewar.config import get_cfg
@@ -58,7 +58,7 @@ class App:
         """Initialises the game window with the screen size, resizable, and 32-bit color (with transparency)."""
 
         logger.info("Setting up game window...")
-        flags = DOUBLEBUF  # FULLSCREEN | DOUBLEBUF
+        flags = RESIZABLE | DOUBLEBUF  # FULLSCREEN | DOUBLEBUF
         resolution = get_cfg("game", "screen_size")
         screen = pygame.display.set_mode(resolution, flags, 32)
         pygame.display.set_caption(GAME_NAME)  # Set the window title

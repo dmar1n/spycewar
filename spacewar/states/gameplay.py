@@ -7,6 +7,7 @@ from pygame.locals import KEYDOWN, KEYUP
 
 from spacewar.entities.players.player import Player1
 from spacewar.entities.projectiles.factory import ProjectileFactory
+from spacewar.entities.projectiles.projectile import Projectile
 from spacewar.entities.projectiles.types import ProjectileType
 from spacewar.entities.render_group import RenderGroup
 from spacewar.enums.states import GameState
@@ -105,6 +106,9 @@ class Gameplay(State):
         if event.event == Events.PLAYER1_FIRES:
             self.__spawn_projectile(ProjectileType.PLAYER1, event.pos, event.vel)
 
+        elif event.event == Events.PROJECTILE_OUT_OF_SCREEN:
+            self.__kill_projectile(event.projectile)
+
     def __spawn_projectile(self, projectile_type: ProjectileType, position: Vector2, velocity: Vector2) -> None:
         """Spawns a projectile of the given type at the specified position.
 
@@ -118,3 +122,16 @@ class Gameplay(State):
 
         if projectile_type == ProjectileType.PLAYER1:
             self.__player1_projectiles.add(projectile)
+
+    def __kill_projectile(self, projectile: Projectile) -> None:
+        """Removes the given projectile from the game.
+
+        Args:
+            projectile: The projectile to remove.
+        """
+
+        if projectile in self.__player1_projectiles:
+            self.__player1_projectiles.remove(projectile)
+            del projectile
+        else:
+            logger.error("Trying to remove a projectile that is not in the game.")

@@ -33,7 +33,7 @@ class Player1(GameObject):
         __current_speed: The current speed of the player.
         __turning_speed: The speed at which the player can turn.
         __acceleration: The acceleration of the player.
-        __cool_down: The cool down time between shots.
+        __cool_down: The cooldown time between shots.
         __angle: The angle of the player.
         __image: The player's image.
         __rotated_image: The rotated player image.
@@ -67,6 +67,18 @@ class Player1(GameObject):
 
         return self.__specs.max_speed
 
+    @property
+    def cooldown(self) -> float:
+        """Cooldown time between shots."""
+
+        return self.__cooldown
+
+    @cooldown.setter
+    def cooldown(self, value: float) -> None:
+        """Sets the cooldown time between shots."""
+
+        self.__cooldown = max(value, 0.0)
+
     def handle_input(self, key: int, is_pressed: bool) -> None:
         """Handles the player input events to control the player object.
 
@@ -81,7 +93,7 @@ class Player1(GameObject):
             self.__state.is_turning_left = is_pressed
         if key in [K_RIGHT, K_d]:
             self.__state.is_turning_right = is_pressed
-        if key in [K_UP, K_w] and self.__cooldown <= 0.0:
+        if key in [K_UP, K_w] and self.cooldown <= 0.0 and is_pressed:
             self.__fire()
 
     def process_events(self, event: Event) -> None:
@@ -109,8 +121,8 @@ class Player1(GameObject):
         self.__state.position += self.__state.velocity * delta_time
         self.__state.speed = self.__state.velocity.length()
 
-        if self.__cooldown >= 0.0:
-            self.__cooldown -= delta_time
+        if self.cooldown >= 0.0:
+            self.cooldown -= delta_time
 
         # self.rect_sync()
 
@@ -151,7 +163,7 @@ class Player1(GameObject):
         surface_dst.blit(render_text(font, f"Angle: {self.__state.angle:.2f}"), (10, 50))
         surface_dst.blit(render_text(font, f"Position: {self.__state.position}"), (10, 90))
         surface_dst.blit(render_text(font, f"Velocity: {self.__state.velocity}"), (10, 110))
-        surface_dst.blit(render_text(font, f"Cool down: {self.__cooldown:.2f}"), (10, 70))
+        surface_dst.blit(render_text(font, f"Cooldown: {self.cooldown:.2f}"), (10, 70))
 
     def __wrap_position(self, surface_dst: Surface) -> None:
         """Wraps the player's position around the screen if it goes out of bounds.
@@ -193,7 +205,7 @@ class Player1(GameObject):
         """
 
         speed = get_cfg("entities", "projectiles", "player1", "speed")
-        self.__cooldown = get_cfg("entities", "projectiles", "player1", "cooldown")
+        self.cooldown = get_cfg("entities", "projectiles", "player1", "cooldown")
 
         angle_radians = math.radians(self.__state.angle)
         direction_vector = -Vector2(math.sin(angle_radians), math.cos(angle_radians))

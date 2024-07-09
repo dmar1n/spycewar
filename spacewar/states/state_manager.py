@@ -1,8 +1,10 @@
 """Module for managing game states."""
 
 import pygame
-from pygame.locals import USEREVENT
+from loguru import logger
+from pygame.locals import USEREVENT, VIDEORESIZE
 
+from spacewar.config import get_cfg, set_cfg
 from spacewar.enums.states import GameState
 from spacewar.states.gameplay import Gameplay
 from spacewar.states.intro import Intro
@@ -40,6 +42,12 @@ class StateManager:
             self.__current_state.process_events(event)
         else:
             self.__current_state.handle_input(event)
+
+        if event.type == VIDEORESIZE:
+            screen_size = event.size
+            logger.debug(f"Resizing screen to: {screen_size}")
+            set_cfg("game", "screen_size", value=screen_size)
+            logger.debug(f"New screen size: {get_cfg('game', 'screen_size')}")
 
     def update(self, delta_time: int) -> None:
         """Updates the current state.
