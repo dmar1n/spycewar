@@ -27,17 +27,35 @@
                 "speed": 0.2,
                 "cooldown": 200,
                 "lifetime": 2000
+            },
+            "player2": {
+                "file": [
+                    "spacewar.assets.images",
+                    "projectile_p2.png"
+                ],
+                "speed": 0.3,
+                "cooldown": 300,
+                "lifetime": 1500
             }
         },
         "ships": {
             "player1": {
                 "file": [
                     "spacewar.assets.images",
-                    "player_1.png"
+                    "player1.png"
                 ],
                 "max_speed": 0.5,
                 "acceleration": 0.001,
                 "rotation_speed": 1.0
+            },
+            "player2": {
+                "file": [
+                    "spacewar.assets.images",
+                    "player2.png"
+                ],
+                "max_speed": 0.4,
+                "acceleration": 0.002,
+                "rotation_speed": 1.2
             }
         }
     }
