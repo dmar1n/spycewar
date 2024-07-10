@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from pygame import Surface
 from pygame.event import Event
 
-from spacewar.enums.states import GameState
+from spycewar.enums.states import GameState
 
 
 class State(ABC):

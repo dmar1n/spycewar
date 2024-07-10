@@ -3,15 +3,17 @@
 import pygame
 from loguru import logger
 from pygame import Surface
-from pygame.locals import KEYDOWN
+from pygame.event import Event
+from pygame.locals import KEYDOWN, USEREVENT
 
-from spacewar.assets.fonts.utils import initialise_font, render_text
-from spacewar.constants import GAME_OVER
-from spacewar.enums.states import GameState
-from spacewar.states.state import State
+from spycewar.assets.fonts.utils import initialise_font, render_text
+from spycewar.constants import GAME_NAME
+from spycewar.enums.states import GameState
+from spycewar.events import Events
+from spycewar.states.state import State
 
 
-class GameOver(State):
+class Intro(State):
     """Represents the introduction state of the game.
 
     This state is responsible for displaying the introductory text and transitioning to the
@@ -24,7 +26,7 @@ class GameOver(State):
 
         self.__render_game_title()
         self.__render_subtext()
-        self.next_state = GameState.INTRO
+        self.next_state = GameState.GAMEPLAY
         self.done = False
 
         logger.info("Introduction state initialized.")
@@ -39,11 +41,13 @@ class GameOver(State):
         """Renders the game title text to be displayed on the introduction screen."""
 
         font = initialise_font("microgramma.ttf", 36)
-        self.__title = render_text(font, " ".join(f"{GAME_OVER}"))
+        self.__title = render_text(font, " ".join(f"{GAME_NAME}"))
 
     def enter(self) -> None:
         """Ensures the state is not done when entering the introduction state."""
         logger.info("Entering introduction state...")
+        intro_event = Event(USEREVENT, event=Events.INTRO, color=(100, 50, 0))
+        pygame.event.post(intro_event)
         self.done = False
 
     def exit(self) -> None:

@@ -4,11 +4,11 @@ import pygame
 from loguru import logger
 from pygame.locals import USEREVENT, VIDEORESIZE
 
-from spacewar.config import get_cfg, set_cfg
-from spacewar.enums.states import GameState
-from spacewar.states.gameover import GameOver
-from spacewar.states.gameplay import Gameplay
-from spacewar.states.intro import Intro
+from spycewar.config import get_cfg, set_cfg
+from spycewar.enums.states import GameState
+from spycewar.states.gameover import GameOver
+from spycewar.states.gameplay import Gameplay
+from spycewar.states.intro import Intro
 
 
 class StateManager:

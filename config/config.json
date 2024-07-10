@@ -7,7 +7,7 @@
     },
     "states": {
         "intro": {
-            "text": "Spacewar! Press any key to continue.",
+            "text": "Spycewar! Press any key to continue.",
             "position": [
                 100,
                 200
@@ -40,7 +40,7 @@
         "projectiles": {
             "player1": {
                 "file": [
-                    "spacewar.assets.images",
+                    "spycewar.assets.images",
                     "projectile_p1.png"
                 ],
                 "speed": 0.2,
@@ -49,7 +49,7 @@
             },
             "player2": {
                 "file": [
-                    "spacewar.assets.images",
+                    "spycewar.assets.images",
                     "projectile_p2.png"
                 ],
                 "speed": 0.2,
@@ -60,7 +60,7 @@
         "ships": {
             "player1": {
                 "file": [
-                    "spacewar.assets.images",
+                    "spycewar.assets.images",
                     "player1.png"
                 ],
                 "max_speed": 0.5,
@@ -69,7 +69,7 @@
             },
             "player2": {
                 "file": [
-                    "spacewar.assets.images",
+                    "spycewar.assets.images",
                     "player2.png"
                 ],
                 "max_speed": 0.4,

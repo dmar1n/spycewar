@@ -2,7 +2,7 @@
 
 import sys
 
-from spacewar.app import App
+from spycewar.app import App
 
 
 def main(args: list[str] | None = None) -> int:

@@ -2,10 +2,10 @@
 
 from pygame import Vector2
 
-from spacewar.entities.players.enums import PlayerId
-from spacewar.entities.projectiles.player_projectile1 import PlayerProjectile1
-from spacewar.entities.projectiles.player_projectile2 import PlayerProjectile2
-from spacewar.entities.projectiles.projectile import Projectile
+from spycewar.entities.players.enums import PlayerId
+from spycewar.entities.projectiles.player_projectile1 import PlayerProjectile1
+from spycewar.entities.projectiles.player_projectile2 import PlayerProjectile2
+from spycewar.entities.projectiles.projectile import Projectile
 
 
 class ProjectileFactory:

@@ -6,14 +6,14 @@ from pygame import Surface, Vector2
 from pygame.event import Event
 from pygame.locals import KEYDOWN, KEYUP
 
-from spacewar.entities.players.enums import PlayerId
-from spacewar.entities.players.player import Player
-from spacewar.entities.projectiles.factory import ProjectileFactory
-from spacewar.entities.projectiles.projectile import Projectile
-from spacewar.entities.render_group import RenderGroup
-from spacewar.enums.states import GameState
-from spacewar.events import Events
-from spacewar.states.state import State
+from spycewar.entities.players.enums import PlayerId
+from spycewar.entities.players.player import Player
+from spycewar.entities.projectiles.factory import ProjectileFactory
+from spycewar.entities.projectiles.projectile import Projectile
+from spycewar.entities.render_group import RenderGroup
+from spycewar.enums.states import GameState
+from spycewar.events import Events
+from spycewar.states.state import State
 
 
 class Gameplay(State):
@@ -154,7 +154,7 @@ class Gameplay(State):
 
         for i, player1 in enumerate(self.__players):
             for player2 in self.__players.sprites()[i + 1 :]:
-                if pygame.sprite.collide_mask(player1, player2):
+                if player1.pos != player2.pos and pygame.sprite.collide_mask(player1, player2):
                     logger.info("Player hit by player (mask)!")
                     self.__spawn_explosion(player1.pos)
                     self.__game_over()
@@ -170,6 +170,5 @@ class Gameplay(State):
     def __game_over(self) -> None:
         """Transitions the game to the game over state."""
 
-        # self.done = True
-        # self.next_state = GameState.GAME_OVER
+        self.done = True
         logger.info("Game over!")
