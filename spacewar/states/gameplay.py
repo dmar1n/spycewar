@@ -5,10 +5,10 @@ from pygame import Surface, Vector2
 from pygame.event import Event
 from pygame.locals import KEYDOWN, KEYUP
 
-from spacewar.entities.players.player import Player1
+from spacewar.entities.players.enums import PlayerId
+from spacewar.entities.players.player import Player
 from spacewar.entities.projectiles.factory import ProjectileFactory
 from spacewar.entities.projectiles.projectile import Projectile
-from spacewar.entities.projectiles.types import ProjectileType
 from spacewar.entities.render_group import RenderGroup
 from spacewar.enums.states import GameState
 from spacewar.events import Events
@@ -30,14 +30,15 @@ class Gameplay(State):
         self.done = False
         self.next_state = GameState.GAME_OVER
         self.__players = RenderGroup()
-        self.__player1_projectiles = RenderGroup()
+        self.__projectiles = RenderGroup()
 
     def enter(self) -> None:
         """Resets the state to indicate the game is not done when entering the gameplay state."""
 
         logger.info("Entering gameplay state...")
         self.done = False
-        self.__players.add(Player1())
+        self.__players.add(Player(PlayerId.PLAYER1))
+        self.__players.add(Player(PlayerId.PLAYER2))
 
     def exit(self) -> None:
         """Placeholder for cleanup actions when exiting the gameplay state.
@@ -65,7 +66,7 @@ class Gameplay(State):
         """
         self.__handle_events(event)
         self.__players.process_events(event)
-        self.__player1_projectiles.process_events(event)
+        self.__projectiles.process_events(event)
 
     def update(self, delta_time: float) -> None:
         """Updates the game logic for the gameplay state.
@@ -75,7 +76,7 @@ class Gameplay(State):
         """
 
         self.__players.update(delta_time)
-        self.__player1_projectiles.update(delta_time)
+        self.__projectiles.update(delta_time)
 
     def render(self, surface_dst: Surface) -> None:
         """Renders the game entities to the given surface.
@@ -85,7 +86,7 @@ class Gameplay(State):
         """
 
         self.__players.render(surface_dst)
-        self.__player1_projectiles.render(surface_dst)
+        self.__projectiles.render(surface_dst)
 
     def release(self) -> None:
         """Releases resources associated with the gameplay state.
@@ -94,7 +95,7 @@ class Gameplay(State):
             surface_dst: The surface to release resources from.
         """
         self.__players.release()
-        self.__player1_projectiles.release()
+        self.__projectiles.release()
 
     def __handle_events(self, event: Event) -> None:
         """Handles game events for the gameplay state.
@@ -104,12 +105,14 @@ class Gameplay(State):
         """
 
         if event.event == Events.PLAYER1_FIRES:
-            self.__spawn_projectile(ProjectileType.PLAYER1, event.pos, event.vel)
+            self.__spawn_projectile(PlayerId.PLAYER1, event.pos, event.vel)
+        if event.event == Events.PLAYER2_FIRES:
+            self.__spawn_projectile(PlayerId.PLAYER2, event.pos, event.vel)
 
         elif event.event == Events.PROJECTILE_OUT_OF_SCREEN:
             self.__kill_projectile(event.projectile)
 
-    def __spawn_projectile(self, projectile_type: ProjectileType, position: Vector2, velocity: Vector2) -> None:
+    def __spawn_projectile(self, player: PlayerId, position: Vector2, velocity: Vector2) -> None:
         """Spawns a projectile of the given type at the specified position.
 
         Args:
@@ -118,10 +121,8 @@ class Gameplay(State):
             velocity: The velocity of the projectile.
         """
 
-        projectile = ProjectileFactory.create_projectile(projectile_type, position, velocity)
-
-        if projectile_type == ProjectileType.PLAYER1:
-            self.__player1_projectiles.add(projectile)
+        projectile = ProjectileFactory.create_projectile(player, position, velocity)
+        self.__projectiles.add(projectile)
 
     def __kill_projectile(self, projectile: Projectile) -> None:
         """Removes the given projectile from the game.
@@ -130,8 +131,8 @@ class Gameplay(State):
             projectile: The projectile to remove.
         """
 
-        if projectile in self.__player1_projectiles:
-            self.__player1_projectiles.remove(projectile)
+        if projectile in self.__projectiles:
+            self.__projectiles.remove(projectile)
             del projectile
         else:
             logger.error("Trying to remove a projectile that is not in the game.")

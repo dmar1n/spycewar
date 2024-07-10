@@ -16,7 +16,24 @@
     },
     "entities": {
         "players": {
-            "player1": {}
+            "player1": {
+                "fire_event": 1,
+                "controls": {
+                    "thrust": "s",
+                    "fire": "w",
+                    "left": "a",
+                    "right": "d"
+                }
+            },
+            "player2": {
+                "fire_event": 2,
+                "controls": {
+                    "thrust": "k",
+                    "fire": "i",
+                    "left": "j",
+                    "right": "l"
+                }
+            }
         },
         "projectiles": {
             "player1": {
