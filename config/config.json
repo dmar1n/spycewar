@@ -22,7 +22,8 @@
                     "thrust": "s",
                     "fire": "w",
                     "left": "a",
-                    "right": "d"
+                    "right": "d",
+                    "stop": "q"
                 }
             },
             "player2": {
@@ -31,7 +32,8 @@
                     "thrust": "k",
                     "fire": "i",
                     "left": "j",
-                    "right": "l"
+                    "right": "l",
+                    "stop": "u"
                 }
             }
         },
@@ -50,8 +52,8 @@
                     "spacewar.assets.images",
                     "projectile_p2.png"
                 ],
-                "speed": 0.3,
-                "cooldown": 300,
+                "speed": 0.2,
+                "cooldown": 100,
                 "lifetime": 1500
             }
         },

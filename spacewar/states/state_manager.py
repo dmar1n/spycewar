@@ -6,6 +6,7 @@ from pygame.locals import USEREVENT, VIDEORESIZE
 
 from spacewar.config import get_cfg, set_cfg
 from spacewar.enums.states import GameState
+from spacewar.states.gameover import GameOver
 from spacewar.states.gameplay import Gameplay
 from spacewar.states.intro import Intro
 
@@ -24,6 +25,7 @@ class StateManager:
         self.__states = {
             GameState.INTRO: Intro(),
             GameState.GAMEPLAY: Gameplay(),
+            GameState.GAME_OVER: GameOver(),
         }
 
         self.__current_state_name = GameState.INTRO

@@ -52,3 +52,8 @@ class PlayerProjectile2(Projectile):
         file_dir, filename = get_cfg("entities", "projectiles", self.__player.value, "file")
         file_path = resources.files(file_dir).joinpath(filename)
         return load_image(file_path)
+
+    def render(self, surface_dst: Surface) -> None:
+        """Renders the projectile to the given surface at the projectile's position."""
+
+        surface_dst.blit(self.image, self._position)

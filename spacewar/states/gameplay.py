@@ -1,5 +1,6 @@
 """Module for the gameplay state in the game's state machine."""
 
+import pygame
 from loguru import logger
 from pygame import Surface, Vector2
 from pygame.event import Event
@@ -78,6 +79,8 @@ class Gameplay(State):
         self.__players.update(delta_time)
         self.__projectiles.update(delta_time)
 
+        self.__detect_collisions()
+
     def render(self, surface_dst: Surface) -> None:
         """Renders the game entities to the given surface.
 
@@ -136,3 +139,37 @@ class Gameplay(State):
             del projectile
         else:
             logger.error("Trying to remove a projectile that is not in the game.")
+
+    def __detect_collisions(self) -> None:
+        """Detects collisions between the players and the projectiles.
+
+        For efficiency reasons, we only check for mask collisions if the collision is first
+        detected by the rectangle.
+        """
+        for player in pygame.sprite.groupcollide(self.__players, self.__projectiles, False, False).keys():
+
+            if pygame.sprite.groupcollide(self.__players, self.__projectiles, False, True, pygame.sprite.collide_mask):
+                logger.info("Player hit by projectile (mask)!")
+                self.__spawn_explosion(player.pos)
+
+        for i, player1 in enumerate(self.__players):
+            for player2 in self.__players.sprites()[i + 1 :]:
+                if pygame.sprite.collide_mask(player1, player2):
+                    logger.info("Player hit by player (mask)!")
+                    self.__spawn_explosion(player1.pos)
+                    self.__game_over()
+
+    def __spawn_explosion(self, position: Vector2) -> None:
+        """Spawns an explosion at the given position.
+
+        Args:
+            position: The position to spawn the explosion at.
+        """
+        logger.info(f"Explosion at {position}")
+
+    def __game_over(self) -> None:
+        """Transitions the game to the game over state."""
+
+        # self.done = True
+        # self.next_state = GameState.GAME_OVER
+        logger.info("Game over!")

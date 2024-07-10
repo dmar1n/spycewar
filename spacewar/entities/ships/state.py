@@ -19,7 +19,6 @@ class ShipState:
         cooldown: the cooldown between shots.
     """
 
-    position: Vector2 = field(default_factory=lambda: Vector2(0, 0))
     velocity: Vector2 = field(default_factory=lambda: Vector2(0, 0))
     speed: float = 0.0
     angle: float = 0.0

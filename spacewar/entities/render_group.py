@@ -15,6 +15,14 @@ class RenderGroup(Group):
 
     This class extends pygame.sprite.Group to add game-specific functionality for handling input,
     processing events, rendering, and releasing resources.
+
+    Methods:
+        handle_input(key, is_pressed): passes input events to all sprites in the group.
+        process_events(event): passes Pygame events to all sprites in the group.
+        render(surface_dst): renders all sprites in the group to the given surface.
+        release(): calls the release method of all sprites in the group.
+
+    See: https://www.pygame.org/docs/ref/sprite.html#pygame.sprite.Group
     """
 
     def __init__(self) -> None:
