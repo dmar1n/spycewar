@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from pygame.event import Event
 from pygame.locals import K_a, K_d, K_i, K_j, K_k, K_l, K_q, K_s, K_u, K_w
 
-from spacewar.config import get_cfg
-from spacewar.entities.players.enums import PlayerId
+from spycewar.config import get_cfg
+from spycewar.entities.players.enums import PlayerId
 
 KEY_MAPPING = {
     "a": K_a,

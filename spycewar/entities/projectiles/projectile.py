@@ -6,8 +6,8 @@ from pygame.event import Event
 from pygame.locals import USEREVENT
 from pygame.math import Vector2
 
-from spacewar.entities.game_object import GameObject
-from spacewar.events import Events
+from spycewar.entities.game_object import GameObject
+from spycewar.events import Events
 
 
 class Projectile(GameObject):

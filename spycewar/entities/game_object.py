@@ -6,7 +6,7 @@ from pygame import Rect, Surface, Vector2
 from pygame.sprite import Sprite
 from yaml import Event
 
-from spacewar.config import get_cfg
+from spycewar.config import get_cfg
 
 
 class GameObject(Sprite, ABC):

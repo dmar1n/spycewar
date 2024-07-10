@@ -17,7 +17,7 @@ def initialise_font(filename: str, size: int) -> Font:
         A Pygame Font object initialised with the given font file and size.
     """
 
-    file_path = resources.files("spacewar.assets.fonts").joinpath(filename)
+    file_path = resources.files("spycewar.assets.fonts").joinpath(filename)
     with resources.as_file(file_path) as font_image_path:
         font = Font(str(font_image_path), size)
     return font

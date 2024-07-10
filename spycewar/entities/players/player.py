@@ -10,12 +10,12 @@ from pygame.event import Event
 from pygame.locals import USEREVENT
 from pygame.math import Vector2
 
-from spacewar.assets.fonts.utils import initialise_font, render_text
-from spacewar.entities.game_object import GameObject
-from spacewar.entities.players.controls import PlayerControls
-from spacewar.entities.players.enums import PlayerId
-from spacewar.entities.ships.specs import ShipSpecs
-from spacewar.entities.ships.state import ShipState
+from spycewar.assets.fonts.utils import initialise_font, render_text
+from spycewar.entities.game_object import GameObject
+from spycewar.entities.players.controls import PlayerControls
+from spycewar.entities.players.enums import PlayerId
+from spycewar.entities.ships.specs import ShipSpecs
+from spycewar.entities.ships.state import ShipState
 
 
 #

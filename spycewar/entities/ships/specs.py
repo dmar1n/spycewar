@@ -7,10 +7,10 @@ from importlib import resources
 
 from pygame import Surface
 
-from spacewar.assets.images.utils import load_image
-from spacewar.config import get_cfg
-from spacewar.entities.players.enums import PlayerId
-from spacewar.events import Events
+from spycewar.assets.images.utils import load_image
+from spycewar.config import get_cfg
+from spycewar.entities.players.enums import PlayerId
+from spycewar.events import Events
 
 
 @dataclass

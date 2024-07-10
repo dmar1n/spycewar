@@ -6,12 +6,15 @@ It sets up the game window, manages game states, and controls the game loop.
 import pygame
 from loguru import logger
 from pygame.event import Event
-from pygame.locals import DOUBLEBUF, K_ESCAPE, KEYDOWN, QUIT, RESIZABLE
+from pygame.locals import DOUBLEBUF, K_ESCAPE, KEYDOWN, QUIT, RESIZABLE, USEREVENT
 from pygame.time import Clock
 
-from spacewar.config import get_cfg
-from spacewar.constants import GAME_NAME
-from spacewar.states.state_manager import StateManager
+from spycewar.config import get_cfg
+from spycewar.constants import GAME_NAME
+from spycewar.events import Events
+from spycewar.states.state_manager import StateManager
+
+DEFAULT_COLOUR = (100, 100, 50)
 
 
 class App:
@@ -30,6 +33,7 @@ class App:
         # pygame.event.set_blocked(None)
         # pygame.event.set_allowed([KEYDOWN, KEYUP, QUIT])
 
+        self.__background_colour = DEFAULT_COLOUR
         self.__screen = self.__initialise_screen()
         self.__clock = Clock()
         self.__state_manager = StateManager()
@@ -75,6 +79,19 @@ class App:
         for event in pygame.event.get():
             self.__handle_quit_event(event)
             self.__state_manager.process_events(event)
+            self.__handle_background_color(event)
+
+    def __handle_background_color(self, event: Event) -> None:
+        """Handles the gameover event to stop the game.
+
+        Args:
+            event: a Pygame event to be handled.
+        """
+        if event.type == USEREVENT:
+            if event.event == Events.GAMEOVER:
+                self.__background_colour = event.color
+            if event.event == Events.INTRO:
+                self.__background_colour = event.color
 
     def __handle_quit_event(self, event: Event) -> None:
         """Handles events to stop the game.
@@ -103,7 +120,7 @@ class App:
         updates the display.
         """
 
-        self.__screen.fill((100, 100, 50))
+        self.__screen.fill(self.__background_colour)
         self.__state_manager.render(self.__screen)
         pygame.display.update()
 
