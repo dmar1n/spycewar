@@ -6,7 +6,7 @@ from pygame.event import Event
 from pygame.locals import USEREVENT
 from pygame.math import Vector2
 
-from spacewar.entities.gameobject import GameObject
+from spacewar.entities.game_object import GameObject
 from spacewar.events import Events
 
 
@@ -37,7 +37,9 @@ class Projectile(GameObject):
         super().__init__()
         self._position = Vector2(position)
         self.__velocity = Vector2(velocity)
-        # self.rect_sync()
+
+        self.rect = self.image.get_rect()
+        self.rect.topleft = self._position
 
     def handle_input(self, key: int, is_pressed: bool) -> None:
         """Handles the input of the player.
@@ -72,7 +74,8 @@ class Projectile(GameObject):
             kill_event = Event(USEREVENT, event=Events.PROJECTILE_OUT_OF_SCREEN, projectile=self)
             pygame.event.post(kill_event)
 
-        # self.rect_sync()
+        self.rect = self.image.get_rect()
+        self.rect.topleft = self._position
 
     def render(self, surface_dst: Surface) -> None:
         """Renders the projectile to the given surface at the projectile's position."""

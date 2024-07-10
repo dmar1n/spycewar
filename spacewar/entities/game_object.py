@@ -2,8 +2,7 @@
 
 from abc import ABC, abstractmethod
 
-import pygame
-from pygame import Surface, Vector2
+from pygame import Rect, Surface, Vector2
 from pygame.sprite import Sprite
 from yaml import Event
 
@@ -13,33 +12,30 @@ from spacewar.config import get_cfg
 class GameObject(Sprite, ABC):
     """An abstract class to represent a virtual game object.
 
-    Attributes
-    ----------
-    _position : pygame.math.Vector2
-        position of the game object in the screen
-    _image : pygame.Surface
-        loaded image of the game object
+    Attributes:
+        _position: the position of the game object in the screen.
+        _image: the loaded image of the game object.
+        rect: the rectangle of the game object. Necessary for collision detection.
 
-    Methods
-    -------
-    handle_input(key, is_pressed):
-        Abstract, handles the input of the player
-    process_events(event):
-        Abstract, process events for other parts of the app
-    update(delta_time):
-        Abstract, updates the game object for a period of time
-    release():
-        Abstract, releases any resource from the game object
-    _in_bounds(distance):
-        Checks if game object is inside the screen
+    Methods:
+        handle_input(key, is_pressed):
+            Abstract, handles the input of the player.
+        process_events(event):
+            Abstract, process events for other parts of the app.
+        update(delta_time):
+            Abstract, updates the game object for a period of time.
+        release():
+            Abstract, releases any resource from the game object.
+        _in_bounds(distance):
+            Checks if game object is inside the screen.
     """
 
     def __init__(self) -> None:
         """Abstract, Constructs the game object class."""
 
         super().__init__()
-        self._position = pygame.math.Vector2(0.0, 0.0)
-        self.rect = pygame.Rect(0, 0, 0, 0)
+        self._position = Vector2(0.0, 0.0)
+        self.rect = Rect(0, 0, 0, 0)
 
     @abstractmethod
     def handle_input(self, key: int, is_pressed: bool) -> None:
@@ -101,14 +97,6 @@ class GameObject(Sprite, ABC):
         """Checks if the game object is alive.
 
         Returns:
-            `True` if the game object is alive, `False` otherwise.
+            `True` if the game object is alive, `False` otherwise.d
         """
         return True
-
-    # def rect_sync(self) -> None:
-    #     """Syncs the rect position with the game object position."""
-
-    #     self.rect.x = self._position.x
-    #     self.rect.y = self._position.y
-    #     self.rect.height = self.image.get_height()
-    #     self.rect.width = self.image.get_width()

@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from pygame.event import Event
-from pygame.locals import K_a, K_d, K_i, K_j, K_k, K_l, K_s, K_w
+from pygame.locals import K_a, K_d, K_i, K_j, K_k, K_l, K_q, K_s, K_u, K_w
 
 from spacewar.config import get_cfg
 from spacewar.entities.players.enums import PlayerId
@@ -19,6 +19,8 @@ KEY_MAPPING = {
     "l": K_l,
     "s": K_s,
     "w": K_w,
+    "q": K_q,
+    "u": K_u,
 }
 
 
@@ -37,6 +39,7 @@ class PlayerControls:
     left: Event
     right: Event
     thrust: Event
+    stop: Event
 
     @classmethod
     def load_controls(cls, player: PlayerId) -> PlayerControls:
@@ -52,4 +55,5 @@ class PlayerControls:
             KEY_MAPPING[controls["left"]],
             KEY_MAPPING[controls["right"]],
             KEY_MAPPING[controls["thrust"]],
+            KEY_MAPPING[controls["stop"]],
         )
