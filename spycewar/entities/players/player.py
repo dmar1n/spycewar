@@ -167,7 +167,7 @@ class Player(GameObject):
         surface_dst.blit(self.__rotated_image, image_rect)
 
         # for debugging purposes
-        pygame.draw.rect(surface_dst, (255, 0, 0), self.rect, 1)
+        # pygame.draw.rect(surface_dst, (255, 0, 0), self.rect, 1)
 
     def release(self) -> None:
         pass

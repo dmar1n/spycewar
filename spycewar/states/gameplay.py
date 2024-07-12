@@ -156,7 +156,7 @@ class Gameplay(State):
         """
         for player in pygame.sprite.groupcollide(self.__players, self.__projectiles, False, False).keys():
 
-            if pygame.sprite.groupcollide(self.__players, self.__projectiles, False, True, pygame.sprite.collide_mask):
+            if pygame.sprite.groupcollide(self.__players, self.__projectiles, True, True, pygame.sprite.collide_mask):
                 logger.info("Player hit by projectile (mask)!")
                 self.__spawn_explosion(player.pos)
 

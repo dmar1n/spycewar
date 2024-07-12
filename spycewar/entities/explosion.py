@@ -1,7 +1,5 @@
 """Module for the explosion entity."""
 
-from random import choice, randint, uniform
-
 from loguru import logger
 from pygame import Surface
 from pygame.event import Event
@@ -35,7 +33,6 @@ class Explosion(GameObject):
     def render(self, surface_dst: Surface) -> None:
         """Renders the explosion entity."""
 
-        logger.info("Rendering explosion...")
         self.particle_group.draw(surface_dst)
 
     def release(self) -> None:
@@ -50,7 +47,5 @@ class Explosion(GameObject):
         """
 
         for _ in range(num_particles):
-            color = choice([(255, 0, 0), (0, 255, 0), (0, 0, 255)])
-            direction = Vector2(uniform(-1, 1), uniform(-1, 1)).normalize()
-            speed = randint(50, 200)
-            Particle(self.particle_group, position, color, direction, speed)
+            Particle(self.particle_group, position)
+            logger.debug(f"Spawning particle at {position}")
