@@ -46,7 +46,7 @@ class Intro(State):
     def enter(self) -> None:
         """Ensures the state is not done when entering the introduction state."""
         logger.info("Entering introduction state...")
-        intro_event = Event(USEREVENT, event=Events.INTRO, color=(100, 50, 0))
+        intro_event = Event(USEREVENT, event=Events.INTRO, color=(0, 0, 0))
         pygame.event.post(intro_event)
         self.done = False
 

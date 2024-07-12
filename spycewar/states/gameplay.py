@@ -6,6 +6,7 @@ from pygame import Surface, Vector2
 from pygame.event import Event
 from pygame.locals import KEYDOWN, KEYUP
 
+from spycewar.entities.explosion import Explosion
 from spycewar.entities.players.enums import PlayerId
 from spycewar.entities.players.player import Player
 from spycewar.entities.projectiles.factory import ProjectileFactory
@@ -32,6 +33,7 @@ class Gameplay(State):
         self.next_state = GameState.GAME_OVER
         self.__players = RenderGroup()
         self.__projectiles = RenderGroup()
+        self.__explosions = RenderGroup()
 
     def enter(self) -> None:
         """Resets the state to indicate the game is not done when entering the gameplay state."""
@@ -47,6 +49,8 @@ class Gameplay(State):
         Currently does nothing.
         """
         self.__players.empty()
+        self.__projectiles.empty()
+        self.__explosions.empty()
 
     def handle_input(self, event: Event) -> None:
         """Handles player input events, delegating to the player's render group for processing.
@@ -68,6 +72,7 @@ class Gameplay(State):
         self.__handle_events(event)
         self.__players.process_events(event)
         self.__projectiles.process_events(event)
+        self.__explosions.process_events(event)
 
     def update(self, delta_time: float) -> None:
         """Updates the game logic for the gameplay state.
@@ -78,6 +83,7 @@ class Gameplay(State):
 
         self.__players.update(delta_time)
         self.__projectiles.update(delta_time)
+        self.__explosions.update(delta_time)
 
         self.__detect_collisions()
 
@@ -90,6 +96,7 @@ class Gameplay(State):
 
         self.__players.render(surface_dst)
         self.__projectiles.render(surface_dst)
+        self.__explosions.render(surface_dst)
 
     def release(self) -> None:
         """Releases resources associated with the gameplay state.
@@ -99,6 +106,7 @@ class Gameplay(State):
         """
         self.__players.release()
         self.__projectiles.release()
+        self.__explosions.release()
 
     def __handle_events(self, event: Event) -> None:
         """Handles game events for the gameplay state.
@@ -148,7 +156,7 @@ class Gameplay(State):
         """
         for player in pygame.sprite.groupcollide(self.__players, self.__projectiles, False, False).keys():
 
-            if pygame.sprite.groupcollide(self.__players, self.__projectiles, False, True, pygame.sprite.collide_mask):
+            if pygame.sprite.groupcollide(self.__players, self.__projectiles, True, True, pygame.sprite.collide_mask):
                 logger.info("Player hit by projectile (mask)!")
                 self.__spawn_explosion(player.pos)
 
@@ -166,6 +174,7 @@ class Gameplay(State):
             position: The position to spawn the explosion at.
         """
         logger.info(f"Explosion at {position}")
+        self.__explosions.add(Explosion(position))
 
     def __game_over(self) -> None:
         """Transitions the game to the game over state."""
