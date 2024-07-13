@@ -1,5 +1,7 @@
 """Module for the explosion entity."""
 
+from random import uniform
+
 from loguru import logger
 from pygame import Surface
 from pygame.event import Event
@@ -47,5 +49,6 @@ class Explosion(GameObject):
         """
 
         for _ in range(num_particles):
-            Particle(self.particle_group, position)
+            direction = Vector2(uniform(-1, 1), uniform(-1, 1)).normalize()
+            Particle(self.particle_group, position, direction)
             logger.debug(f"Spawning particle at {position}")

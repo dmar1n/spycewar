@@ -13,11 +13,12 @@ from pygame.sprite import Group, Sprite
 class Particle(Sprite):
     """Particle class to represent an explosion particle in the game."""
 
-    def __init__(self, groups: Group, position: Vector2) -> None:
+    def __init__(self, groups: Group, position: Vector2, direction: Vector2) -> None:
 
         super().__init__(groups)
         self.__alpha = 255
         self.__position = position.xy
+        self.__direction = direction
         self.__create_surface()
         logger.info(f"Position type: {type(self.__position)}")
 
@@ -25,19 +26,13 @@ class Particle(Sprite):
     def color(self) -> tuple[int, int, int]:
         """Returns the color of the particle."""
 
-        return choice([(69, 177, 200), (80, 175, 220), (60, 165, 195), (50, 155, 185)])
+        return choice([(69, 177, 200), (80, 175, 220), (60, 165, 195), (50, 155, 185), (90, 180, 230)])
 
     @cached_property
     def speed(self) -> float:
         """Returns the speed of the particle."""
 
         return uniform(0.01, 0.08)
-
-    @cached_property
-    def direction(self) -> Vector2:
-        """Returns the direction of the particle."""
-
-        return Vector2(uniform(-1, 1), uniform(-1, 1)).normalize()
 
     @property
     def alpha(self) -> int:
@@ -49,7 +44,7 @@ class Particle(Sprite):
     def fade_rate(self) -> float:
         """Returns the fade rate of the particle."""
 
-        return 0.01
+        return 0.1
 
     def update(self, delta_time: int) -> None:
         """Updates the particle's position based on the direction and speed."""
@@ -70,13 +65,13 @@ class Particle(Sprite):
     def __move(self, delta_time: float) -> None:
         """Moves the particle based on the direction and speed."""
 
-        self.__position += self.direction * self.speed * delta_time
+        self.__position += self.__direction * self.speed * delta_time
         self.rect.center = self.__position
 
     def __fade(self, delta_time: float) -> None:
         """Fades the particle over time."""
 
-        self.__alpha -= int(self.fade_rate * delta_time)
+        self.__alpha -= round(self.fade_rate * delta_time)
         self.image.set_alpha(self.alpha)
 
     def __check_alpha(self) -> None:
