@@ -56,4 +56,4 @@ class Explosion(GameObject):
 
         for _ in range(num_particles):
             direction = Vector2(uniform(-1, 1), uniform(-1, 1)).normalize()
-            Particle(self.particle_group, position, direction)
+            Particle(self.particle_group, position, direction, radius=2)

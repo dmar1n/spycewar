@@ -18,7 +18,7 @@ class Thrust(GameObject):
         super().__init__()
 
         self.particle_group = Group()
-        self.__spawn_thrust(position, direction, 5)
+        self.__spawn_thrust(position, direction, 1)
 
     def handle_input(self, key: int, is_pressed: bool) -> None:
         """Handles the input for the explosion entity."""
@@ -52,4 +52,4 @@ class Thrust(GameObject):
         """
 
         for _ in range(num_particles):
-            Particle(self.particle_group, position, direction)
+            Particle(self.particle_group, position, direction, radius=1)

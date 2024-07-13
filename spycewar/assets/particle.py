@@ -16,12 +16,13 @@ from spycewar.constants import SCREEN_HEIGHT_ENV_VAR, SCREEN_WIDTH_ENV_VAR
 class Particle(Sprite):
     """Particle class to represent an explosion particle in the game."""
 
-    def __init__(self, groups: Group, position: Vector2, direction: Vector2) -> None:
+    def __init__(self, groups: Group, position: Vector2, direction: Vector2, radius: int) -> None:
 
         super().__init__(groups)
         self.__alpha = 255
         self.__position = position.xy
         self.__direction = direction
+        self.__radius = radius
         self.__create_surface()
 
     @property
@@ -61,7 +62,7 @@ class Particle(Sprite):
 
         self.image = Surface((4, 4)).convert_alpha()
         self.image.set_colorkey("black")
-        circle(surface=self.image, color=self.color, center=(2, 2), radius=1)
+        circle(surface=self.image, color=self.color, center=(2, 2), radius=self.__radius)
         self.rect = self.image.get_rect(center=self.__position)
 
     def __move(self, delta_time: float) -> None:
