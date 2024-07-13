@@ -4,6 +4,7 @@ It sets up the game window, manages game states, and controls the game loop.
 """
 
 import os
+from random import randint
 
 import pygame
 from loguru import logger
@@ -40,6 +41,7 @@ class App:
         self.__clock = Clock()
         self.__state_manager = StateManager()
         self.__running = False
+        self.__starfied = self.__generate_starfield()
 
     def run(self) -> None:
         """Runs the game loop."""
@@ -125,8 +127,16 @@ class App:
         """
 
         self.__screen.fill(self.__background_colour)
+        self.__draw_starfield()
         self.__state_manager.render(self.__screen)
         pygame.display.update()
+
+    def __draw_starfield(self) -> None:
+        """Draws the starfield background for the game."""
+
+        for star in self.__starfied:
+            x, y, color = star
+            pygame.draw.circle(self.__screen, (color, color, color), (x, y), 1)
 
     def __release(self) -> None:
         """Cleans up resources.
@@ -137,3 +147,14 @@ class App:
         self.__state_manager.release()
         pygame.quit()
         logger.info("Game stopped.")
+
+    def __generate_starfield(self) -> list[tuple[int, int, int]]:
+        """Generates a starfield background for the game."""
+
+        stars = []
+        num_stars = 50
+        for _ in range(num_stars):
+            x = randint(0, self.__screen.get_width())
+            y = randint(0, self.__screen.get_height())
+            stars.append((x, y, randint(50, 255)))
+        return stars
