@@ -14,6 +14,7 @@ from spycewar.assets.fonts.utils import initialise_font, render_text
 from spycewar.entities.game_object import GameObject
 from spycewar.entities.players.controls import PlayerControls
 from spycewar.entities.players.enums import PlayerId
+from spycewar.entities.players.state import PlayerState
 from spycewar.entities.ships.specs import ShipSpecs
 from spycewar.entities.ships.state import ShipState
 from spycewar.events import Events
@@ -36,9 +37,9 @@ class Player(GameObject):
     def __init__(self, player: PlayerId) -> None:
         super().__init__()
 
+        self.state = PlayerState(player)
         self._position = Vector2()
-        self.__player = player
-        self.__state = ShipState()
+        self.__ship_state = ShipState()
         self.__specs = ShipSpecs.load_ship_specs(player)
         self.__controls = PlayerControls.load_controls(player)
 
@@ -47,18 +48,14 @@ class Player(GameObject):
 
         # Caches
         self.__rotated_image = self.image  # Cache the rotated image
-        self.__last_angle = self.__state.angle
+        self.__last_angle = self.__ship_state.angle
 
-        logger.info(f"Player {player} created with specs: {self.__specs}")
+        logger.info(f"{player} created with specs: {self.__specs}")
 
         self.__get_mask()
 
-    def __get_mask(self) -> None:
-        """Gets the mask of the player's image."""
-
-        self.rect = self.__rotated_image.get_rect()
-        self.rect.topleft = self._position.x - self.rect.width // 2, self._position.y - self.rect.height // 2
-        self.mask = pygame.mask.from_surface(self.__rotated_image)
+    def __str__(self) -> str:
+        return f"{self.state.player_id.name} (health: {self.state.health}, position: {self._position})."
 
     @cached_property
     def image(self) -> Surface:
@@ -99,18 +96,21 @@ class Player(GameObject):
         """
 
         if key == self.__controls.thrust:
-            self.__state.is_accelerating = is_pressed
+            self.__ship_state.is_accelerating = is_pressed
         if key == self.__controls.left:
-            self.__state.is_turning_left = is_pressed
+            self.__ship_state.is_turning_left = is_pressed
         if key == self.__controls.right:
-            self.__state.is_turning_right = is_pressed
+            self.__ship_state.is_turning_right = is_pressed
         if key == self.__controls.stop and is_pressed:
-            self.__state.velocity = Vector2(0, 0)
+            self.__ship_state.velocity = Vector2(0, 0)
         if key == self.__controls.fire and self.cooldown <= 0.0 and is_pressed:
             self.__fire()
 
     def process_events(self, event: Event) -> None:
         """Process events for other parts of the app."""
+
+        if event.event == Events.PLAYER_HIT and event.player == self:
+            self.state.take_damage(event.damage)
 
     def update(self, delta_time: float) -> None:
         """Updates the player's position based on the input and the time passed since the last frame.
@@ -124,21 +124,26 @@ class Player(GameObject):
         if not self._position:
             return
 
-        if self.__state.is_accelerating:
+        if self.__ship_state.is_accelerating:
             self.__update_velocity()
             self.__thrust()
-        if self.__state.is_turning_left:
-            self.__state.angle += self.__specs.rotation_speed
-        if self.__state.is_turning_right:
-            self.__state.angle -= self.__specs.rotation_speed
+        if self.__ship_state.is_turning_left:
+            self.__ship_state.angle += self.__specs.rotation_speed
+        if self.__ship_state.is_turning_right:
+            self.__ship_state.angle -= self.__specs.rotation_speed
 
-        self._position += self.__state.velocity * delta_time
-        self.__state.speed = self.__state.velocity.length()
+        self._position += self.__ship_state.velocity * delta_time
+        self.__ship_state.speed = self.__ship_state.velocity.length()
 
         if self.cooldown >= 0.0:
             self.cooldown -= delta_time
 
         self.__get_mask()
+
+        if self.state.health <= 0:
+            logger.debug(f"{self} died.")
+            dead_event = Event(USEREVENT, event=Events.PLAYER_DIED, player=self)
+            pygame.event.post(dead_event)
 
     def render(self, surface_dst: Surface) -> None:
         """Renders the player to the given surface at the player's position.
@@ -151,13 +156,14 @@ class Player(GameObject):
             surface_dst: The surface to render the player to.
         """
         if not self._position:
+            # Randomise the player's position if it is not set
             # self._position = Vector2(
             #     randint(20, surface_dst.get_width() - 20),
             #     randint(20, surface_dst.get_height()) - 20,
             # )
-            if self.__player == PlayerId.PLAYER1:
+            if self.state.player_id == PlayerId.PLAYER1:
                 self._position = Vector2(100, 100)
-            elif self.__player == PlayerId.PLAYER2:
+            elif self.state.player_id == PlayerId.PLAYER2:
                 self._position = Vector2(surface_dst.get_width() - 100, surface_dst.get_height() - 100)
 
         self.__render_player_info(surface_dst)  # For debugging purposes
@@ -169,10 +175,17 @@ class Player(GameObject):
         surface_dst.blit(self.__rotated_image, image_rect)
 
         # for debugging purposes
-        # pygame.draw.rect(surface_dst, (255, 0, 0), self.rect, 1)
+        pygame.draw.rect(surface_dst, (255, 0, 0), self.rect, 1)
 
     def release(self) -> None:
         pass
+
+    def __get_mask(self) -> None:
+        """Gets the mask of the player's image."""
+
+        self.rect = self.__rotated_image.get_rect()
+        self.rect.topleft = self._position.x - self.rect.width // 2, self._position.y - self.rect.height // 2
+        self.mask = pygame.mask.from_surface(self.__rotated_image)
 
     def __render_player_info(self, surface_dst: Surface) -> None:
         """Renders the player's information to the given surface for debugging purposes.
@@ -181,16 +194,17 @@ class Player(GameObject):
             surface_dst: The surface to render the player's information to.
         """
 
-        x = 10 if self.__player == PlayerId.PLAYER1 else surface_dst.get_width() - 250
+        x = 10 if self.state.player_id == PlayerId.PLAYER1 else surface_dst.get_width() - 250
 
         font = initialise_font("eurostile.ttf", 14)
-        surface_dst.blit(render_text(font, self.__player.name), (x, 10))
-        surface_dst.blit(render_text(font, f"Speed: {self.__state.speed:.2f}"), (x, 30))
-        surface_dst.blit(render_text(font, f"Angle: {self.__state.angle:.2f}"), (x, 50))
+        surface_dst.blit(render_text(font, self.state.player_id.value), (x, 10))
+        surface_dst.blit(render_text(font, f"Speed: {self.__ship_state.speed:.2f}"), (x, 30))
+        surface_dst.blit(render_text(font, f"Angle: {self.__ship_state.angle:.2f}"), (x, 50))
         surface_dst.blit(render_text(font, f"Position: {self._position}"), (x, 90))
-        surface_dst.blit(render_text(font, f"Velocity: {self.__state.velocity}"), (x, 110))
+        surface_dst.blit(render_text(font, f"Velocity: {self.__ship_state.velocity}"), (x, 110))
         surface_dst.blit(render_text(font, f"Cooldown: {self.cooldown:.2f}"), (x, 70))
         surface_dst.blit(render_text(font, f"Rect: {self.rect}"), (x, 130))
+        surface_dst.blit(render_text(font, f"Health: {self.state.health}"), (x, 150))
 
     def __wrap_position(self, surface_dst: Surface) -> None:
         """Wraps the player's position around the screen if it goes out of bounds.
@@ -212,17 +226,17 @@ class Player(GameObject):
 
     def __rotate_image(self) -> None:
         """Rotates the player image to the current angle if it has changed since the last frame."""
-        if self.__last_angle != self.__state.angle:
-            self.__rotated_image = pygame.transform.rotate(self.image, self.__state.angle)
-            self.__last_angle = self.__state.angle
+        if self.__last_angle != self.__ship_state.angle:
+            self.__rotated_image = pygame.transform.rotate(self.image, self.__ship_state.angle)
+            self.__last_angle = self.__ship_state.angle
 
     def __normalise_angle(self) -> None:
         """Normalises the angle to be between 0 and 360 degrees."""
 
-        if self.__state.angle > 360:
-            self.__state.angle -= 360
-        elif self.__state.angle < 0:
-            self.__state.angle += 360
+        if self.__ship_state.angle > 360:
+            self.__ship_state.angle -= 360
+        elif self.__ship_state.angle < 0:
+            self.__ship_state.angle += 360
 
     def __fire(self) -> None:
         """Fires a projectile from the player's position.
@@ -249,10 +263,10 @@ class Player(GameObject):
             backwards: a boolean indicating whether the object should go backwards.
             offset: the offset from the player's position to spawn the object.
         """
-        angle_radians = math.radians(self.__state.angle)
+        angle_radians = math.radians(self.__ship_state.angle)
         direction_vector = -Vector2(math.sin(angle_radians), math.cos(angle_radians))
         direction_vector = -direction_vector if backwards else direction_vector
-        velocity = self.__state.velocity + direction_vector * self.__specs.projectile_speed
+        velocity = self.__ship_state.velocity + direction_vector * self.__specs.projectile_speed
         position = direction_vector * (self.image.get_height() // 2 + offset) + self._position
         return velocity, position
 
@@ -263,8 +277,8 @@ class Player(GameObject):
         to match the angle.
         """
         acceleration_vector = Vector2(self.__specs.acceleration, 0)
-        acceleration_vector.rotate_ip(-self.__state.angle - 90)
-        velocity = self.__state.velocity + acceleration_vector
-        self.__state.velocity = (
+        acceleration_vector.rotate_ip(-self.__ship_state.angle - 90)
+        velocity = self.__ship_state.velocity + acceleration_vector
+        self.__ship_state.velocity = (
             velocity if velocity.length() <= self.max_speed else velocity.normalize() * self.max_speed
         )

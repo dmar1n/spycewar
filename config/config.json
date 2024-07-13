@@ -17,6 +17,7 @@
     "entities": {
         "players": {
             "player1": {
+                "max_health": 120,
                 "fire_event": 1,
                 "controls": {
                     "thrust": "s",
@@ -27,6 +28,7 @@
                 }
             },
             "player2": {
+                "max_health": 100,
                 "fire_event": 2,
                 "controls": {
                     "thrust": "k",
