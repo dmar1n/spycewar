@@ -12,6 +12,7 @@ from spycewar.entities.players.player import Player
 from spycewar.entities.projectiles.factory import ProjectileFactory
 from spycewar.entities.projectiles.projectile import Projectile
 from spycewar.entities.render_group import RenderGroup
+from spycewar.entities.thruster import Thrust
 from spycewar.enums.states import GameState
 from spycewar.events import Events
 from spycewar.states.state import State
@@ -34,6 +35,7 @@ class Gameplay(State):
         self.__players = RenderGroup()
         self.__projectiles = RenderGroup()
         self.__explosions = RenderGroup()
+        self.__thrusts = RenderGroup()
 
     def enter(self) -> None:
         """Resets the state to indicate the game is not done when entering the gameplay state."""
@@ -51,6 +53,7 @@ class Gameplay(State):
         self.__players.empty()
         self.__projectiles.empty()
         self.__explosions.empty()
+        self.__thrusts.empty()
 
     def handle_input(self, event: Event) -> None:
         """Handles player input events, delegating to the player's render group for processing.
@@ -73,6 +76,7 @@ class Gameplay(State):
         self.__players.process_events(event)
         self.__projectiles.process_events(event)
         self.__explosions.process_events(event)
+        self.__thrusts.process_events(event)
 
     def update(self, delta_time: float) -> None:
         """Updates the game logic for the gameplay state.
@@ -84,7 +88,7 @@ class Gameplay(State):
         self.__players.update(delta_time)
         self.__projectiles.update(delta_time)
         self.__explosions.update(delta_time)
-
+        self.__thrusts.update(delta_time)
         self.__detect_collisions()
 
     def render(self, surface_dst: Surface) -> None:
@@ -97,6 +101,7 @@ class Gameplay(State):
         self.__players.render(surface_dst)
         self.__projectiles.render(surface_dst)
         self.__explosions.render(surface_dst)
+        self.__thrusts.render(surface_dst)
 
     def release(self) -> None:
         """Releases resources associated with the gameplay state.
@@ -107,6 +112,7 @@ class Gameplay(State):
         self.__players.release()
         self.__projectiles.release()
         self.__explosions.release()
+        self.__thrusts.release()
 
     def __handle_events(self, event: Event) -> None:
         """Handles game events for the gameplay state.
@@ -119,9 +125,14 @@ class Gameplay(State):
             self.__spawn_projectile(PlayerId.PLAYER1, event.pos, event.vel)
         if event.event == Events.PLAYER2_FIRES:
             self.__spawn_projectile(PlayerId.PLAYER2, event.pos, event.vel)
-
-        elif event.event == Events.PROJECTILE_OUT_OF_SCREEN:
+        if event.event == Events.THRUST:
+            self.__spawn_thrust(event.pos, event.dir_)
+        if event.event == Events.PROJECTILE_OUT_OF_SCREEN:
             self.__kill_projectile(event.projectile)
+        if event.event == Events.THRUST_EXHAUSTED:
+            self.__kill_thrust(event.thrust)
+        if event.event == Events.EXPLOSION_OVER:
+            self.__kill_explosion(event.explosion)
 
     def __spawn_projectile(self, player: PlayerId, position: Vector2, velocity: Vector2) -> None:
         """Spawns a projectile of the given type at the specified position.
@@ -134,6 +145,15 @@ class Gameplay(State):
 
         projectile = ProjectileFactory.create_projectile(player, position, velocity)
         self.__projectiles.add(projectile)
+
+    def __spawn_thrust(self, position: Vector2, direction: Vector2) -> None:
+        """Spawns a thrust at the given position.
+
+        Args:
+            position: The position to spawn the thrust at.
+            direction: The direction of the thrust.
+        """
+        self.__thrusts.add(Thrust(position, direction))
 
     def __kill_projectile(self, projectile: Projectile) -> None:
         """Removes the given projectile from the game.
@@ -148,6 +168,45 @@ class Gameplay(State):
         else:
             logger.error("Trying to remove a projectile that is not in the game.")
 
+    def __kill_thrust(self, thrust: Thrust) -> None:
+        """Removes the given thrust from the game.
+
+        Args:
+            thrust: The thrust to remove.
+        """
+
+        if thrust in self.__thrusts:
+            self.__thrusts.remove(thrust)
+            del thrust
+        else:
+            logger.error("Trying to remove a thrust that is not in the game.")
+
+    def __kill_explosion(self, explosion: Explosion) -> None:
+        """Removes the given explosion from the game.
+
+        Args:
+            explosion: The explosion to remove.
+        """
+
+        if explosion in self.__explosions:
+            self.__explosions.remove(explosion)
+            del explosion
+        else:
+            logger.error("Trying to remove an explosion that is not in the game.")
+
+    def __kill_player(self, player: Player) -> None:
+        """Removes the given player from the game.
+
+        Args:
+            player: The player to remove.
+        """
+
+        if player in self.__players:
+            self.__players.remove(player)
+            del player
+        else:
+            logger.error("Trying to remove a player that is not in the game.")
+
     def __detect_collisions(self) -> None:
         """Detects collisions between the players and the projectiles.
 
@@ -159,12 +218,16 @@ class Gameplay(State):
             if pygame.sprite.groupcollide(self.__players, self.__projectiles, True, True, pygame.sprite.collide_mask):
                 logger.info("Player hit by projectile (mask)!")
                 self.__spawn_explosion(player.pos)
+                self.__game_over()
 
         for i, player1 in enumerate(self.__players):
             for player2 in self.__players.sprites()[i + 1 :]:
                 if player1.pos != player2.pos and pygame.sprite.collide_mask(player1, player2):
                     logger.info("Player hit by player (mask)!")
                     self.__spawn_explosion(player1.pos)
+                    self.__spawn_explosion(player2.pos)
+                    self.__kill_player(player1)
+                    self.__kill_player(player2)
                     self.__game_over()
 
     def __spawn_explosion(self, position: Vector2) -> None:

@@ -1,4 +1,6 @@
 """Module for the constants used in the game."""
 
 GAME_NAME = "Spycewar!"
-GAME_OVER = "Game Over"
+GAME_OVER = "GAME OVER"
+SCREEN_WIDTH_ENV_VAR = "SPYWARE_SCREEN_WIDTH"
+SCREEN_HEIGHT_ENV_VAR = "SPYWARE_SCREEN_HEIGHT"

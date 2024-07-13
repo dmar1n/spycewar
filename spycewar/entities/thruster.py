@@ -1,11 +1,8 @@
-"""Module for the explosion entity."""
-
-from random import uniform
+"""Module for the thruster entity."""
 
 import pygame
-from pygame import Surface
+from pygame import USEREVENT, Surface
 from pygame.event import Event
-from pygame.locals import USEREVENT
 from pygame.math import Vector2
 from pygame.sprite import Group
 
@@ -14,14 +11,14 @@ from spycewar.entities.game_object import GameObject
 from spycewar.events import Events
 
 
-class Explosion(GameObject):
+class Thrust(GameObject):
     """Represents a particle explosion entity in the game."""
 
-    def __init__(self, position: list[int]) -> None:
+    def __init__(self, position: list[int], direction: Vector2) -> None:
         super().__init__()
 
         self.particle_group = Group()
-        self.__spawn_particles(position, 100)
+        self.__spawn_thrust(position, direction, 5)
 
     def handle_input(self, key: int, is_pressed: bool) -> None:
         """Handles the input for the explosion entity."""
@@ -35,7 +32,7 @@ class Explosion(GameObject):
         self.particle_group.update(delta_time)
 
         if len(self.particle_group) <= 0:
-            kill_event = Event(USEREVENT, event=Events.EXPLOSION_OVER, explosion=self)
+            kill_event = Event(USEREVENT, event=Events.THRUST_EXHAUSTED, thrust=self)
             pygame.event.post(kill_event)
 
     def render(self, surface_dst: Surface) -> None:
@@ -46,7 +43,7 @@ class Explosion(GameObject):
     def release(self) -> None:
         """Releases the resources for the explosion entity."""
 
-    def __spawn_particles(self, position: Vector2, num_particles: int) -> None:
+    def __spawn_thrust(self, position: Vector2, direction: Vector2, num_particles: int) -> None:
         """Spawns particles for the explosion.
 
         Args:
@@ -55,5 +52,4 @@ class Explosion(GameObject):
         """
 
         for _ in range(num_particles):
-            direction = Vector2(uniform(-1, 1), uniform(-1, 1)).normalize()
             Particle(self.particle_group, position, direction)

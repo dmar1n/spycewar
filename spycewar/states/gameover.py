@@ -39,31 +39,31 @@ class GameOver(State):
     def __render_game_title(self) -> None:
         """Renders the game title text to be displayed on the gameover screen."""
 
-        font = initialise_font("microgramma.ttf", 36)
+        font = initialise_font("eurostile.ttf", 36)
         self.__title = render_text(font, " ".join(f"{GAME_OVER}"))
 
     def enter(self) -> None:
         """Ensures the state is not done when entering the gameover state."""
-        gameover_event = Event(USEREVENT, event=Events.GAMEOVER, color=(0, 50, 0))
+        gameover_event = Event(USEREVENT, event=Events.GAMEOVER, color=(0, 0, 0))
         pygame.event.post(gameover_event)
         self.done = False
 
     def exit(self) -> None:
         """Exits the gameover state, currently doing nothing."""
 
-    def handle_input(self, event: pygame.event.Event) -> None:
+    def handle_input(self, event: Event) -> None:
         """Handles input events to transition to the next state."""
 
         if event.type == KEYDOWN:
             self.done = True
 
-    def process_events(self, event: pygame.event.Event) -> None:
+    def process_events(self, event: Event) -> None:
         """Processes events in the gameover state, currently doing nothing."""
 
     def update(self, delta_time: float) -> None:
         """Updates the gameover state, currently doing nothing."""
 
-    def render(self, surface_dst: pygame.Surface) -> None:
+    def render(self, surface_dst: Surface) -> None:
         """Renders the gameover text to the given surface.
 
         Args:
