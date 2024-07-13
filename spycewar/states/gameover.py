@@ -1,15 +1,13 @@
 """Module for the gameover state."""
 
-import pygame
 from loguru import logger
 from pygame import Surface
 from pygame.event import Event
-from pygame.locals import KEYDOWN, USEREVENT
+from pygame.locals import KEYDOWN
 
 from spycewar.assets.fonts.utils import initialise_font, render_text
 from spycewar.constants import GAME_OVER
 from spycewar.enums.states import GameState
-from spycewar.events import Events
 from spycewar.states.state import State
 
 
@@ -44,8 +42,6 @@ class GameOver(State):
 
     def enter(self) -> None:
         """Ensures the state is not done when entering the gameover state."""
-        gameover_event = Event(USEREVENT, event=Events.GAMEOVER, color=(0, 0, 0))
-        pygame.event.post(gameover_event)
         self.done = False
 
     def exit(self) -> None:

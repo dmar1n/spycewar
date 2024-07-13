@@ -4,7 +4,7 @@ import pygame
 from loguru import logger
 from pygame import Surface, Vector2
 from pygame.event import Event
-from pygame.locals import KEYDOWN, KEYUP
+from pygame.locals import KEYDOWN, KEYUP, USEREVENT
 
 from spycewar.entities.explosion import Explosion
 from spycewar.entities.players.enums import PlayerId
@@ -133,6 +133,9 @@ class Gameplay(State):
             self.__kill_thrust(event.thrust)
         if event.event == Events.EXPLOSION_OVER:
             self.__kill_explosion(event.explosion)
+        if event.event == Events.GAMEOVER:
+            self.done = True
+            logger.info("Game over!")
 
     def __spawn_projectile(self, player: PlayerId, position: Vector2, velocity: Vector2) -> None:
         """Spawns a projectile of the given type at the specified position.
@@ -239,8 +242,8 @@ class Gameplay(State):
         logger.info(f"Explosion at {position}")
         self.__explosions.add(Explosion(position))
 
-    def __game_over(self) -> None:
-        """Transitions the game to the game over state."""
-
-        self.done = True
-        logger.info("Game over!")
+    def __game_over(self, trigger_delay: int = 3000) -> None:
+        """Post gameover event with some delay after the kill."""
+        logger.info("Game over event triggered.")
+        gameover_event = Event(USEREVENT, event=Events.GAMEOVER, color=(0, 0, 0))
+        pygame.time.set_timer(gameover_event, trigger_delay, 1)
