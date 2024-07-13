@@ -1,18 +1,23 @@
 """Module for the gameplay state in the game's state machine."""
 
+import os
+import random
+
 import pygame
 from loguru import logger
 from pygame import Surface, Vector2
 from pygame.event import Event
 from pygame.locals import KEYDOWN, KEYUP, USEREVENT
 
+from spycewar.constants import SCREEN_WIDTH_ENV_VAR
 from spycewar.entities.explosion import Explosion
 from spycewar.entities.players.enums import PlayerId
+from spycewar.entities.players.health_bar import HealthBar
 from spycewar.entities.players.player import Player
 from spycewar.entities.projectiles.factory import ProjectileFactory
 from spycewar.entities.projectiles.projectile import Projectile
 from spycewar.entities.render_group import RenderGroup
-from spycewar.entities.thruster import Thrust
+from spycewar.entities.ships.thruster import Thrust
 from spycewar.enums.states import GameState
 from spycewar.events import Events
 from spycewar.states.state import State
@@ -36,6 +41,7 @@ class Gameplay(State):
         self.__projectiles = RenderGroup()
         self.__explosions = RenderGroup()
         self.__thrusts = RenderGroup()
+        self.__heath_bars = RenderGroup()
 
     def enter(self) -> None:
         """Resets the state to indicate the game is not done when entering the gameplay state."""
@@ -44,6 +50,8 @@ class Gameplay(State):
         self.done = False
         self.__players.add(Player(PlayerId.PLAYER1))
         self.__players.add(Player(PlayerId.PLAYER2))
+        self.__heath_bars.add(HealthBar(PlayerId.PLAYER1, 10, 10))
+        self.__heath_bars.add(HealthBar(PlayerId.PLAYER2, int(os.environ[SCREEN_WIDTH_ENV_VAR]) - 160, 10))
 
     def exit(self) -> None:
         """Placeholder for cleanup actions when exiting the gameplay state.
@@ -54,6 +62,7 @@ class Gameplay(State):
         self.__projectiles.empty()
         self.__explosions.empty()
         self.__thrusts.empty()
+        self.__heath_bars.empty()
 
     def handle_input(self, event: Event) -> None:
         """Handles player input events, delegating to the player's render group for processing.
@@ -77,6 +86,7 @@ class Gameplay(State):
         self.__projectiles.process_events(event)
         self.__explosions.process_events(event)
         self.__thrusts.process_events(event)
+        self.__heath_bars.process_events(event)
 
     def update(self, delta_time: float) -> None:
         """Updates the game logic for the gameplay state.
@@ -89,6 +99,7 @@ class Gameplay(State):
         self.__projectiles.update(delta_time)
         self.__explosions.update(delta_time)
         self.__thrusts.update(delta_time)
+        self.__heath_bars.update(delta_time)
         self.__detect_collisions()
 
     def render(self, surface_dst: Surface) -> None:
@@ -102,6 +113,7 @@ class Gameplay(State):
         self.__projectiles.render(surface_dst)
         self.__explosions.render(surface_dst)
         self.__thrusts.render(surface_dst)
+        self.__heath_bars.render(surface_dst)
 
     def release(self) -> None:
         """Releases resources associated with the gameplay state.
@@ -113,6 +125,7 @@ class Gameplay(State):
         self.__projectiles.release()
         self.__explosions.release()
         self.__thrusts.release()
+        self.__heath_bars.release()
 
     def __handle_events(self, event: Event) -> None:
         """Handles game events for the gameplay state.
@@ -133,6 +146,10 @@ class Gameplay(State):
             self.__kill_thrust(event.thrust)
         if event.event == Events.EXPLOSION_OVER:
             self.__kill_explosion(event.explosion)
+        if event.event == Events.PLAYER_DIED:
+            self.__kill_player(event.player)
+            self.__game_over()
+
         if event.event == Events.GAMEOVER:
             self.done = True
             logger.info("Game over!")
@@ -205,10 +222,11 @@ class Gameplay(State):
         """
 
         if player in self.__players:
+            logger.info(f"Player {player} died.")
             self.__players.remove(player)
             del player
         else:
-            logger.error("Trying to remove a player that is not in the game.")
+            logger.error(f"Trying to remove a player {player} that is not in the game.")
 
     def __detect_collisions(self) -> None:
         """Detects collisions between the players and the projectiles.
@@ -218,10 +236,11 @@ class Gameplay(State):
         """
         for player in pygame.sprite.groupcollide(self.__players, self.__projectiles, False, False).keys():
 
-            if pygame.sprite.groupcollide(self.__players, self.__projectiles, True, True, pygame.sprite.collide_mask):
+            if pygame.sprite.groupcollide(self.__players, self.__projectiles, False, True, pygame.sprite.collide_mask):
                 logger.info("Player hit by projectile (mask)!")
                 self.__spawn_explosion(player.pos)
-                self.__game_over()
+                hit_event = Event(USEREVENT, event=Events.PLAYER_HIT, player=player, damage=random.randint(10, 20))
+                pygame.event.post(hit_event)
 
         for i, player1 in enumerate(self.__players):
             for player2 in self.__players.sprites()[i + 1 :]:
@@ -231,7 +250,6 @@ class Gameplay(State):
                     self.__spawn_explosion(player2.pos)
                     self.__kill_player(player1)
                     self.__kill_player(player2)
-                    self.__game_over()
 
     def __spawn_explosion(self, position: Vector2) -> None:
         """Spawns an explosion at the given position.

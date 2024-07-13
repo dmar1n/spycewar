@@ -9,6 +9,8 @@ class Events(Enum):
     Attributes:
     `PLAYER1_FIRES`: Player 1 fires a projectile. Params: `pos` (position) and `vel` (velocity).
     `PLAYER2_FIRES`: Player 2 fires a projectile. Params: `pos` (position) and `vel` (velocity).
+    `PLAYER_HIT`: A player is hit. Params: `player` (Player) and damage (int).
+    `PLAYER_DIED`: A player died. Params: `player` (Player).
     `THRUST`: A player is thrusting. Params: `pos` (position) and `dir_` (velocity).
     `THRUST_EXHAUSTED`: A player stopped thrusting. Params: thrust.
     `PROJECTILE_OUT_OF_SCREEN`: A projectile went out of the screen. Params: projectile (projectile).
@@ -17,8 +19,10 @@ class Events(Enum):
     `INTRO`: The game is in the intro screen. Params: RGB
     """
 
-    PLAYER1_FIRES = 1
-    PLAYER2_FIRES = 2
+    PLAYER1_FIRES = auto()
+    PLAYER2_FIRES = auto()
+    PLAYER_HIT = auto()
+    PLAYER_DIED = auto()
     THRUST = auto()
     THRUST_EXHAUSTED = auto()
     PROJECTILE_OUT_OF_SCREEN = auto()
