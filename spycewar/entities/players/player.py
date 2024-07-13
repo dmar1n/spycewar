@@ -16,6 +16,7 @@ from spycewar.entities.players.controls import PlayerControls
 from spycewar.entities.players.enums import PlayerId
 from spycewar.entities.ships.specs import ShipSpecs
 from spycewar.entities.ships.state import ShipState
+from spycewar.events import Events
 
 
 #
@@ -125,6 +126,7 @@ class Player(GameObject):
 
         if self.__state.is_accelerating:
             self.__update_velocity()
+            self.__thrust()
         if self.__state.is_turning_left:
             self.__state.angle += self.__specs.rotation_speed
         if self.__state.is_turning_right:
@@ -229,14 +231,30 @@ class Player(GameObject):
         processed by the game.
         """
         self.cooldown = self.__specs.projectile_cooldown
-        angle_radians = math.radians(self.__state.angle)
-        direction_vector = -Vector2(math.sin(angle_radians), math.cos(angle_radians))
-        projectile_velocity = self.__state.velocity + direction_vector * self.__specs.projectile_speed
-
-        projectile_offset = 10  # Offset the projectile from the player's position
-        fire_position = direction_vector * (self.image.get_height() // 2 + projectile_offset) + self._position
+        projectile_velocity, fire_position = self.__compute_trajectory()
         fire_event = Event(USEREVENT, event=self.__specs.fire_event, pos=fire_position, vel=projectile_velocity)
         pygame.event.post(fire_event)
+
+    def __thrust(self) -> None:
+        """Applies full thrust to the player's velocity."""
+
+        velocity, position = self.__compute_trajectory(backwards=True, offset=-2)
+        thrust_event = Event(USEREVENT, event=Events.THRUST, pos=position, dir_=2 * velocity.normalize())
+        pygame.event.post(thrust_event)
+
+    def __compute_trajectory(self, backwards: bool = False, offset: int = 10) -> tuple[Vector2, Vector2]:
+        """Computes the trajectory of the object based on the player's position and angle.
+
+        Args:
+            backwards: a boolean indicating whether the object should go backwards.
+            offset: the offset from the player's position to spawn the object.
+        """
+        angle_radians = math.radians(self.__state.angle)
+        direction_vector = -Vector2(math.sin(angle_radians), math.cos(angle_radians))
+        direction_vector = -direction_vector if backwards else direction_vector
+        velocity = self.__state.velocity + direction_vector * self.__specs.projectile_speed
+        position = direction_vector * (self.image.get_height() // 2 + offset) + self._position
+        return velocity, position
 
     def __update_velocity(self) -> None:
         """Updates the player's velocity based on the current angle and acceleration.

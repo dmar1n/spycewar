@@ -1,10 +1,13 @@
 """Module for managing game states."""
 
+import os
+
 import pygame
 from loguru import logger
 from pygame.locals import USEREVENT, VIDEORESIZE
 
-from spycewar.config import get_cfg, set_cfg
+from spycewar.config import set_cfg
+from spycewar.constants import SCREEN_HEIGHT_ENV_VAR, SCREEN_WIDTH_ENV_VAR
 from spycewar.enums.states import GameState
 from spycewar.states.gameover import GameOver
 from spycewar.states.gameplay import Gameplay
@@ -49,7 +52,8 @@ class StateManager:
             screen_size = event.size
             logger.debug(f"Resizing screen to: {screen_size}")
             set_cfg("game", "screen_size", value=screen_size)
-            logger.debug(f"New screen size: {get_cfg('game', 'screen_size')}")
+            os.environ[SCREEN_WIDTH_ENV_VAR] = str(screen_size[0])
+            os.environ[SCREEN_HEIGHT_ENV_VAR] = str(screen_size[1])
 
     def update(self, delta_time: int) -> None:
         """Updates the current state.
@@ -80,5 +84,4 @@ class StateManager:
         self.__current_state_name = self.__current_state.next_state
         self.__current_state = self.__states[self.__current_state_name]
         self.__current_state.previous_state = previous_state
-
         self.__current_state.enter()

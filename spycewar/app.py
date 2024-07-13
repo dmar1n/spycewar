@@ -3,6 +3,8 @@
 It sets up the game window, manages game states, and controls the game loop.
 """
 
+import os
+
 import pygame
 from loguru import logger
 from pygame.event import Event
@@ -10,7 +12,7 @@ from pygame.locals import DOUBLEBUF, K_ESCAPE, KEYDOWN, QUIT, RESIZABLE, USEREVE
 from pygame.time import Clock
 
 from spycewar.config import get_cfg
-from spycewar.constants import GAME_NAME
+from spycewar.constants import GAME_NAME, SCREEN_HEIGHT_ENV_VAR, SCREEN_WIDTH_ENV_VAR
 from spycewar.events import Events
 from spycewar.states.state_manager import StateManager
 
@@ -67,6 +69,8 @@ class App:
         screen = pygame.display.set_mode(resolution, flags, 32)
         pygame.display.set_caption(GAME_NAME)  # Set the window title
         pygame.mouse.set_visible(False)
+        os.environ[SCREEN_WIDTH_ENV_VAR] = str(resolution[0])
+        os.environ[SCREEN_HEIGHT_ENV_VAR] = str(resolution[1])
         return screen
 
     def __process_events(self) -> None:
@@ -88,9 +92,9 @@ class App:
             event: a Pygame event to be handled.
         """
         if event.type == USEREVENT:
-            if event.event == Events.GAMEOVER:
-                self.__background_colour = event.color
             if event.event == Events.INTRO:
+                self.__background_colour = event.color
+            if event.event == Events.GAMEOVER:
                 self.__background_colour = event.color
 
     def __handle_quit_event(self, event: Event) -> None:

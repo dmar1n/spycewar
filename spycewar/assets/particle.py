@@ -1,13 +1,16 @@
 """Module for rendering a particle in the game."""
 
+import os
 from functools import cached_property
 from random import choice, uniform
 
-from loguru import logger
 from pygame import Surface
 from pygame.draw import circle
 from pygame.math import Vector2
 from pygame.sprite import Group, Sprite
+
+from spycewar.config import get_cfg
+from spycewar.constants import SCREEN_HEIGHT_ENV_VAR, SCREEN_WIDTH_ENV_VAR
 
 
 class Particle(Sprite):
@@ -20,7 +23,6 @@ class Particle(Sprite):
         self.__position = position.xy
         self.__direction = direction
         self.__create_surface()
-        logger.info(f"Position type: {type(self.__position)}")
 
     @property
     def color(self) -> tuple[int, int, int]:
@@ -32,7 +34,7 @@ class Particle(Sprite):
     def speed(self) -> float:
         """Returns the speed of the particle."""
 
-        return uniform(0.01, 0.08)
+        return uniform(0.02, 0.07)
 
     @property
     def alpha(self) -> int:
@@ -59,7 +61,7 @@ class Particle(Sprite):
 
         self.image = Surface((4, 4)).convert_alpha()
         self.image.set_colorkey("black")
-        circle(surface=self.image, color=self.color, center=(2, 2), radius=2)
+        circle(surface=self.image, color=self.color, center=(2, 2), radius=1)
         self.rect = self.image.get_rect(center=self.__position)
 
     def __move(self, delta_time: float) -> None:
@@ -83,5 +85,13 @@ class Particle(Sprite):
     def __check_position(self) -> None:
         """Checks if the particle is off-screen and removes it if it is."""
 
-        if not self.rect.colliderect((0, 0, 800, 600)):
+        screen_width = os.environ.get(SCREEN_WIDTH_ENV_VAR) or get_cfg("game", "screen_size")[0]
+        screen_height = os.environ.get(SCREEN_HEIGHT_ENV_VAR) or get_cfg("game", "screen_size")[1]
+
+        if (
+            self.rect.centerx < 0
+            or self.rect.centerx > int(screen_width)
+            or self.rect.centery < 0
+            or self.rect.centery > int(screen_height)
+        ):
             self.kill()
