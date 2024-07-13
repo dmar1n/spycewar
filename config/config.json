@@ -41,7 +41,7 @@
             "player1": {
                 "file": [
                     "spycewar.assets.images",
-                    "projectile_p1.png"
+                    "generic_projectile.png"
                 ],
                 "speed": 0.2,
                 "cooldown": 200,
@@ -50,7 +50,7 @@
             "player2": {
                 "file": [
                     "spycewar.assets.images",
-                    "projectile_p2.png"
+                    "generic_projectile.png"
                 ],
                 "speed": 0.2,
                 "cooldown": 100,
