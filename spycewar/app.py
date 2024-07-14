@@ -49,7 +49,7 @@ class App:
         self.__clock = Clock()
         self.__state_manager = StateManager()
         self.__running = False
-        self.__starfied = self.__generate_starfield()
+        self.__starfield = self.__generate_starfield()
 
     def run(self) -> None:
         """Runs the game loop."""
@@ -103,7 +103,7 @@ class App:
             set_cfg("game", "screen_size", value=screen_size)
             os.environ[SCREEN_WIDTH_ENV_VAR] = str(screen_size[0])
             os.environ[SCREEN_HEIGHT_ENV_VAR] = str(screen_size[1])
-            self.__generate_starfield()
+            self.__starfield = self.__generate_starfield()
             self.__draw_starfield()
 
     def __handle_background_color(self, event: Event) -> None:
@@ -153,7 +153,7 @@ class App:
     def __draw_starfield(self) -> None:
         """Draws the starfield background for the game."""
 
-        for star in self.__starfied:
+        for star in self.__starfield:
             x, y, color = star
             pygame.draw.circle(self.__screen, (color, color, color), (x, y), 1)
 
