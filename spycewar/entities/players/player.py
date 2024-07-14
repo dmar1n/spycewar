@@ -111,6 +111,8 @@ class Player(GameObject):
 
         if event.event == Events.PLAYER_HIT and event.player == self:
             self.state.take_damage(event.damage)
+        if event.event == Events.HEALTH_POWERUP_PICKUP:
+            self.state.heal(event.value)
 
     def update(self, delta_time: float) -> None:
         """Updates the player's position based on the input and the time passed since the last frame.
