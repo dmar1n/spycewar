@@ -9,10 +9,18 @@ from random import randint
 import pygame
 from loguru import logger
 from pygame.event import Event
-from pygame.locals import DOUBLEBUF, K_ESCAPE, KEYDOWN, QUIT, RESIZABLE, USEREVENT
+from pygame.locals import (
+    DOUBLEBUF,
+    K_ESCAPE,
+    KEYDOWN,
+    QUIT,
+    RESIZABLE,
+    USEREVENT,
+    VIDEORESIZE,
+)
 from pygame.time import Clock
 
-from spycewar.config import get_cfg
+from spycewar.config import get_cfg, set_cfg
 from spycewar.constants import GAME_NAME, SCREEN_HEIGHT_ENV_VAR, SCREEN_WIDTH_ENV_VAR
 from spycewar.events import Events
 from spycewar.states.state_manager import StateManager
@@ -84,8 +92,19 @@ class App:
 
         for event in pygame.event.get():
             self.__handle_quit_event(event)
+            self.__handle_resize_event(event)
             self.__state_manager.process_events(event)
             self.__handle_background_color(event)
+
+    def __handle_resize_event(self, event: Event) -> None:
+        if event.type == VIDEORESIZE:
+            screen_size = event.size
+            logger.debug(f"Resizing screen to: {screen_size}")
+            set_cfg("game", "screen_size", value=screen_size)
+            os.environ[SCREEN_WIDTH_ENV_VAR] = str(screen_size[0])
+            os.environ[SCREEN_HEIGHT_ENV_VAR] = str(screen_size[1])
+            self.__generate_starfield()
+            self.__draw_starfield()
 
     def __handle_background_color(self, event: Event) -> None:
         """Handles the gameover event to stop the game.

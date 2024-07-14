@@ -1,13 +1,9 @@
 """Module for managing game states."""
 
-import os
+from pygame import Surface
+from pygame.event import Event
+from pygame.locals import USEREVENT
 
-import pygame
-from loguru import logger
-from pygame.locals import USEREVENT, VIDEORESIZE
-
-from spycewar.config import set_cfg
-from spycewar.constants import SCREEN_HEIGHT_ENV_VAR, SCREEN_WIDTH_ENV_VAR
 from spycewar.enums.states import GameState
 from spycewar.states.gameover import GameOver
 from spycewar.states.gameplay import Gameplay
@@ -35,7 +31,7 @@ class StateManager:
         self.__current_state = self.__states[self.__current_state_name]
         self.__current_state.enter()
 
-    def process_events(self, event: pygame.event.Event) -> None:
+    def process_events(self, event: Event) -> None:
         """Processes events by passing them to the current state.
 
         Differentiates between USEREVENT and other events, handling them appropriately.
@@ -47,13 +43,6 @@ class StateManager:
             self.__current_state.process_events(event)
         else:
             self.__current_state.handle_input(event)
-
-        if event.type == VIDEORESIZE:
-            screen_size = event.size
-            logger.debug(f"Resizing screen to: {screen_size}")
-            set_cfg("game", "screen_size", value=screen_size)
-            os.environ[SCREEN_WIDTH_ENV_VAR] = str(screen_size[0])
-            os.environ[SCREEN_HEIGHT_ENV_VAR] = str(screen_size[1])
 
     def update(self, delta_time: int) -> None:
         """Updates the current state.
@@ -68,7 +57,7 @@ class StateManager:
 
         self.__current_state.update(delta_time)
 
-    def render(self, surface_dst: pygame.Surface) -> None:
+    def render(self, surface_dst: Surface) -> None:
         """Renders the current state to the given surface."""
         self.__current_state.render(surface_dst)
 
