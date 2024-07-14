@@ -5,6 +5,8 @@ from importlib import resources
 from pygame import Surface
 from pygame.font import Font
 
+from spycewar.constants import SPYCEWAR_BLUE
+
 
 def initialise_font(filename: str, size: int) -> Font:
     """Initialises a font from the given filename and size.
@@ -23,9 +25,9 @@ def initialise_font(filename: str, size: int) -> Font:
     return font
 
 
-def render_text(font: Font, text: str) -> Surface:
+def render_text(font: Font, text: str, color: tuple[int, int, int] = SPYCEWAR_BLUE) -> Surface:
     """Returns the text rendered with the given font.
 
     It applies anti-aliasing and uses white color.
     """
-    return font.render(text, True, (200, 180, 160), None)
+    return font.render(text, True, color, None)

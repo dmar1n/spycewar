@@ -24,6 +24,7 @@ class PlayerProjectile2(Projectile):
     __mid_width: int = 0
     __mid_height: int = 0
     __player = PlayerId.PLAYER2
+    __base_damage = get_cfg("entities", "projectiles", __player.value, "base_damage")
 
     def __init__(self, position: Vector2, velocity: Vector2) -> None:
 
@@ -41,6 +42,12 @@ class PlayerProjectile2(Projectile):
         """Image of the projectile."""
 
         return PlayerProjectile2.__image
+
+    @property
+    def damage(self) -> int:
+        """Damage of the projectile."""
+
+        return self.__base_damage
 
     def __load_projectile(self) -> Surface:
         """Loads the player image from the given file path and converts it to alpha.

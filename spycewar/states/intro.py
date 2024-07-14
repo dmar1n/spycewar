@@ -40,7 +40,7 @@ class Intro(State):
     def __render_game_title(self) -> None:
         """Renders the game title text to be displayed on the introduction screen."""
 
-        font = initialise_font("microgramma.ttf", 36)
+        font = initialise_font("microgramma.ttf", 48)
         self.__title = render_text(font, " ".join(f"{GAME_NAME}"))
 
     def enter(self) -> None:

@@ -24,15 +24,10 @@ class PlayerProjectile1(Projectile):
     __mid_width: int = 0
     __mid_height: int = 0
     __player = PlayerId.PLAYER1
+    __base_damage = get_cfg("entities", "projectiles", __player.value, "base_damage")
 
     def __init__(self, position: Vector2, velocity: Vector2) -> None:
-
-        if PlayerProjectile1.__image is None:
-            PlayerProjectile1.__image = self.__load_projectile()
-            PlayerProjectile1.__mid_width = PlayerProjectile1.__image.get_width() / 2
-            PlayerProjectile1.__mid_height = PlayerProjectile1.__image.get_height() / 2
-            logger.info(f"PlayerProjectile1 image loaded: {PlayerProjectile1.__image}")
-
+        self.__load_projectile_image()
         position = (position.x - self.__mid_width, position.y - self.__mid_height)
         super().__init__(position, velocity)
 
@@ -42,12 +37,22 @@ class PlayerProjectile1(Projectile):
 
         return PlayerProjectile1.__image
 
-    def __load_projectile(self) -> Surface:
+    @property
+    def damage(self) -> int:
+        """Damage of the projectile."""
+
+        return self.__base_damage
+
+    def __load_projectile_image(self) -> None:
         """Loads the player image from the given file path and converts it to alpha.
 
         Returns:
             The player image as a pygame Surface.
         """
-        file_dir, filename = get_cfg("entities", "projectiles", self.__player.value, "file")
-        file_path = resources.files(file_dir).joinpath(filename)
-        return load_image(file_path)
+        if PlayerProjectile1.__image is None:
+            file_dir, filename = get_cfg("entities", "projectiles", self.__player.value, "file")
+            file_path = resources.files(file_dir).joinpath(filename)
+            PlayerProjectile1.__image = load_image(file_path)
+            PlayerProjectile1.__mid_width = PlayerProjectile1.__image.get_width() / 2
+            PlayerProjectile1.__mid_height = PlayerProjectile1.__image.get_height() / 2
+            logger.info(f"PlayerProjectile1 image loaded: {PlayerProjectile1.__image}")
