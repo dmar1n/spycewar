@@ -1,8 +1,8 @@
 {
     "game": {
         "screen_size": [
-            800,
-            600
+            1024,
+            768
         ]
     },
     "states": {
@@ -18,7 +18,8 @@
                     "fire": "w",
                     "left": "a",
                     "right": "d",
-                    "stop": "q"
+                    "hyperspace": "q",
+                    "shield": "e"
                 }
             },
             "player2": {
@@ -29,7 +30,8 @@
                     "fire": "i",
                     "left": "j",
                     "right": "l",
-                    "stop": "u"
+                    "hyperspace": "u",
+                    "shield": "o"
                 }
             }
         },
@@ -40,7 +42,7 @@
                     "generic_projectile.png"
                 ],
                 "base_damage": 10,
-                "speed": 0.2,
+                "speed": 0.4,
                 "cooldown": 200,
                 "lifetime": 2000
             },
@@ -50,7 +52,7 @@
                     "generic_projectile.png"
                 ],
                 "base_damage": 20,
-                "speed": 0.2,
+                "speed": 0.5,
                 "cooldown": 100,
                 "lifetime": 1500
             }
@@ -63,7 +65,8 @@
                 ],
                 "max_speed": 0.5,
                 "acceleration": 0.004,
-                "rotation_speed": 1.4
+                "rotation_speed": 1.8,
+                "hyperspace_cooldown": 5000
             },
             "player2": {
                 "file": [
@@ -72,7 +75,8 @@
                 ],
                 "max_speed": 0.4,
                 "acceleration": 0.005,
-                "rotation_speed": 1.6
+                "rotation_speed": 1.6,
+                "hyperspace_cooldown": 4000
             }
         },
         "powerups": {

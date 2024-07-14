@@ -25,6 +25,7 @@ class ShipSpecs:
         rotation_speed: the rotation speed of the ship.
         projectile_speed: the speed of the projectile fired by the ship.
         projectile_cooldown: the cooldown between shots.
+        hyperspace_cooldown: the cooldown between teleports.
     """
 
     player: PlayerId
@@ -35,6 +36,7 @@ class ShipSpecs:
     rotation_speed: float
     projectile_speed: float
     projectile_cooldown: float
+    hyperspace_cooldown: float
 
     @classmethod
     def load_ship_specs(cls, player: PlayerId) -> ShipSpecs:
@@ -53,6 +55,7 @@ class ShipSpecs:
         rotation_speed = get_cfg("entities", "ships", player.value, "rotation_speed")
         projectile_speed = get_cfg("entities", "projectiles", player.value, "speed")
         projectile_cooldown = get_cfg("entities", "projectiles", player.value, "cooldown")
+        hyperspace_cooldown = get_cfg("entities", "ships", player.value, "hyperspace_cooldown")
 
         return cls(
             player,
@@ -63,4 +66,5 @@ class ShipSpecs:
             rotation_speed,
             projectile_speed,
             projectile_cooldown,
+            hyperspace_cooldown,
         )

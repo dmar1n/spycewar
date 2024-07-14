@@ -16,7 +16,6 @@ class ShipState:
         is_accelerating: a boolean indicating whether the ship is accelerating.
         is_turning_left: a boolean indicating whether the ship is turning left.
         is_turning_right: a boolean indicating whether the ship is turning right.
-        cooldown: the cooldown between shots.
     """
 
     velocity: Vector2 = field(default_factory=lambda: Vector2(0, 0))

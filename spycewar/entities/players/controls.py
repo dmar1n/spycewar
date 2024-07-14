@@ -39,7 +39,7 @@ class PlayerControls:
     left: Event
     right: Event
     thrust: Event
-    stop: Event
+    hyperspace: Event
 
     @classmethod
     def load_controls(cls, player: PlayerId) -> PlayerControls:
@@ -55,5 +55,5 @@ class PlayerControls:
             KEY_MAPPING[controls["left"]],
             KEY_MAPPING[controls["right"]],
             KEY_MAPPING[controls["thrust"]],
-            KEY_MAPPING[controls["stop"]],
+            KEY_MAPPING[controls["hyperspace"]],
         )

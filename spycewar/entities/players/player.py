@@ -2,6 +2,7 @@
 
 import math
 from functools import cached_property
+from random import randint
 
 import pygame
 from loguru import logger
@@ -11,6 +12,7 @@ from pygame.locals import USEREVENT
 from pygame.math import Vector2
 
 from spycewar.assets.fonts.utils import initialise_font, render_text
+from spycewar.config import get_cfg
 from spycewar.entities.game_object import GameObject
 from spycewar.entities.players.controls import PlayerControls
 from spycewar.entities.players.enums import PlayerId
@@ -32,6 +34,7 @@ class Player(GameObject):
         specs: the specifications of the player object.
         controls: the controls of the player object.
         cooldown: the cooldown time between shots.
+        hyperspace_cooldown: the cooldown time between hyperspaceation.
     """
 
     def __init__(self, player: PlayerId) -> None:
@@ -43,8 +46,9 @@ class Player(GameObject):
         self.__specs = ShipSpecs.load_ship_specs(player)
         self.__controls = PlayerControls.load_controls(player)
 
-        # Projectiles
+        # Cooldown
         self.__cooldown = 0.0
+        self.__hyperspace_cooldown = 0.0
 
         # Caches
         self.__rotated_image = self.image  # Cache the rotated image
@@ -82,6 +86,18 @@ class Player(GameObject):
         self.__cooldown = max(value, 0.0)
 
     @property
+    def hyperspace_cooldown(self) -> float:
+        """Cooldown time between hyperspaceation."""
+
+        return self.__hyperspace_cooldown
+
+    @hyperspace_cooldown.setter
+    def hyperspace_cooldown(self, value: float) -> None:
+        """Sets the cooldown time between hyperspaceation."""
+
+        self.__hyperspace_cooldown = max(value, 0.0)
+
+    @property
     def specs(self) -> ShipSpecs:
         """Specifications of the player."""
 
@@ -101,8 +117,8 @@ class Player(GameObject):
             self.__ship_state.is_turning_left = is_pressed
         if key == self.__controls.right:
             self.__ship_state.is_turning_right = is_pressed
-        if key == self.__controls.stop and is_pressed:
-            self.__ship_state.velocity = Vector2(0, 0)
+        if key == self.__controls.hyperspace and is_pressed and self.hyperspace_cooldown <= 0.0:
+            self.__hyperspace()
         if key == self.__controls.fire and self.cooldown <= 0.0 and is_pressed:
             self.__fire()
 
@@ -140,6 +156,9 @@ class Player(GameObject):
         if self.cooldown >= 0.0:
             self.cooldown -= delta_time
 
+        if self.hyperspace_cooldown >= 0.0:
+            self.hyperspace_cooldown -= delta_time
+
         self.__get_mask()
 
         if self.state.health <= 0:
@@ -168,7 +187,7 @@ class Player(GameObject):
             elif self.state.player_id == PlayerId.PLAYER2:
                 self._position = Vector2(surface_dst.get_width() - 100, surface_dst.get_height() - 100)
 
-        # self.__render_player_info(surface_dst)  # For debugging purposes
+        self.__render_player_info(surface_dst)  # For debugging purposes
         self.__normalise_angle()
         self.__rotate_image()
         self.__wrap_position(surface_dst)
@@ -205,6 +224,7 @@ class Player(GameObject):
         surface_dst.blit(render_text(font, f"Position: {self._position}"), (x, 90))
         surface_dst.blit(render_text(font, f"Velocity: {self.__ship_state.velocity}"), (x, 110))
         surface_dst.blit(render_text(font, f"Cooldown: {self.cooldown:.2f}"), (x, 70))
+        surface_dst.blit(render_text(font, f"hyperspace Cooldown: {self.hyperspace_cooldown:.2f}"), (x, 170))
         surface_dst.blit(render_text(font, f"Rect: {self.rect}"), (x, 130))
         surface_dst.blit(render_text(font, f"Health: {self.state.health}"), (x, 150))
 
@@ -239,6 +259,16 @@ class Player(GameObject):
             self.__ship_state.angle -= 360
         elif self.__ship_state.angle < 0:
             self.__ship_state.angle += 360
+
+    def __hyperspace(self) -> None:
+        """Hyperspaces the player to a random position on the screen."""
+
+        self.hyperspace_cooldown = self.__specs.hyperspace_cooldown
+        self.__ship_state.velocity = Vector2(0, 0)
+        self._position = Vector2(
+            randint(20, get_cfg("game", "screen_size")[0] - 20),
+            randint(20, get_cfg("game", "screen_size")[1] - 20),
+        )
 
     def __fire(self) -> None:
         """Fires a projectile from the player's position.
