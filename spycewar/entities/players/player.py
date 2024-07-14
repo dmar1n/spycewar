@@ -168,7 +168,7 @@ class Player(GameObject):
             elif self.state.player_id == PlayerId.PLAYER2:
                 self._position = Vector2(surface_dst.get_width() - 100, surface_dst.get_height() - 100)
 
-        self.__render_player_info(surface_dst)  # For debugging purposes
+        # self.__render_player_info(surface_dst)  # For debugging purposes
         self.__normalise_angle()
         self.__rotate_image()
         self.__wrap_position(surface_dst)
@@ -177,7 +177,7 @@ class Player(GameObject):
         surface_dst.blit(self.__rotated_image, image_rect)
 
         # for debugging purposes
-        pygame.draw.rect(surface_dst, (255, 0, 0), self.rect, 1)
+        # pygame.draw.rect(surface_dst, (255, 0, 0), self.rect, 1)
 
     def release(self) -> None:
         pass
@@ -247,18 +247,18 @@ class Player(GameObject):
         processed by the game.
         """
         self.cooldown = self.__specs.projectile_cooldown
-        projectile_velocity, fire_position = self.__compute_trajectory()
+        projectile_velocity, fire_position = self.__compute_trajectory(speed=self.__specs.projectile_speed)
         fire_event = Event(USEREVENT, event=self.__specs.fire_event, pos=fire_position, vel=projectile_velocity)
         pygame.event.post(fire_event)
 
     def __thrust(self) -> None:
         """Applies full thrust to the player's velocity."""
 
-        velocity, position = self.__compute_trajectory(backwards=True, offset=-2)
-        thrust_event = Event(USEREVENT, event=Events.THRUST, pos=position, dir_=2 * velocity.normalize())
+        velocity, position = self.__compute_trajectory(backwards=True, offset=-5, speed=2.5)
+        thrust_event = Event(USEREVENT, event=Events.THRUST, pos=position, dir_=2 * velocity)
         pygame.event.post(thrust_event)
 
-    def __compute_trajectory(self, backwards: bool = False, offset: int = 10) -> tuple[Vector2, Vector2]:
+    def __compute_trajectory(self, speed: float, backwards: bool = False, offset: int = 10) -> tuple[Vector2, Vector2]:
         """Computes the trajectory of the object based on the player's position and angle.
 
         Args:
@@ -268,7 +268,7 @@ class Player(GameObject):
         angle_radians = math.radians(self.__ship_state.angle)
         direction_vector = -Vector2(math.sin(angle_radians), math.cos(angle_radians))
         direction_vector = -direction_vector if backwards else direction_vector
-        velocity = self.__ship_state.velocity + direction_vector * self.__specs.projectile_speed
+        velocity = self.__ship_state.velocity + direction_vector * speed
         position = direction_vector * (self.image.get_height() // 2 + offset) + self._position
         return velocity, position
 

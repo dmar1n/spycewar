@@ -11,7 +11,7 @@
     "entities": {
         "players": {
             "player1": {
-                "max_health": 1200,
+                "max_health": 500,
                 "fire_event": 1,
                 "controls": {
                     "thrust": "s",
@@ -22,7 +22,7 @@
                 }
             },
             "player2": {
-                "max_health": 1000,
+                "max_health": 600,
                 "fire_event": 2,
                 "controls": {
                     "thrust": "k",
@@ -62,8 +62,8 @@
                     "player1.png"
                 ],
                 "max_speed": 0.5,
-                "acceleration": 0.001,
-                "rotation_speed": 1.0
+                "acceleration": 0.004,
+                "rotation_speed": 1.4
             },
             "player2": {
                 "file": [
@@ -71,8 +71,8 @@
                     "player2.png"
                 ],
                 "max_speed": 0.4,
-                "acceleration": 0.002,
-                "rotation_speed": 1.2
+                "acceleration": 0.005,
+                "rotation_speed": 1.6
             }
         },
         "powerups": {

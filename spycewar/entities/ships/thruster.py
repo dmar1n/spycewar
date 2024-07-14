@@ -52,4 +52,4 @@ class Thrust(GameObject):
         """
 
         for _ in range(num_particles):
-            Particle(self.particle_group, position, direction, radius=1)
+            Particle(self.particle_group, position, direction, radius=1, fade=0.7)

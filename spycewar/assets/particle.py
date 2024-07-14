@@ -16,13 +16,14 @@ from spycewar.constants import SCREEN_HEIGHT_ENV_VAR, SCREEN_WIDTH_ENV_VAR
 class Particle(Sprite):
     """Particle class to represent an explosion particle in the game."""
 
-    def __init__(self, groups: Group, position: Vector2, direction: Vector2, radius: int) -> None:
+    __alpha = 255
 
+    def __init__(self, groups: Group, position: Vector2, direction: Vector2, radius: int, fade: float = 0.1) -> None:
         super().__init__(groups)
-        self.__alpha = 255
         self.__position = position.xy
         self.__direction = direction
         self.__radius = radius
+        self.__fade_rate = fade
         self.__create_surface()
 
     @property
@@ -47,7 +48,7 @@ class Particle(Sprite):
     def fade_rate(self) -> float:
         """Returns the fade rate of the particle."""
 
-        return 0.1
+        return self.__fade_rate
 
     def update(self, delta_time: int) -> None:
         """Updates the particle's position based on the direction and speed."""

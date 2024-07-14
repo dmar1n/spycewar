@@ -5,6 +5,7 @@ from pygame import Surface
 from pygame.draw import rect
 from pygame.event import Event
 
+from spycewar.assets.fonts.utils import initialise_font
 from spycewar.config import get_cfg
 from spycewar.entities.game_object import GameObject
 from spycewar.entities.players.enums import PlayerId
@@ -14,8 +15,7 @@ from spycewar.events import Events
 class HealthBar(GameObject):
     """Represents the health bar of a player."""
 
-    __full = (210, 210, 210)
-    __empty = (120, 120, 120)
+    __empty_color = (120, 120, 120)
 
     def __init__(self, player_id: PlayerId, x: int, y: int) -> None:
         super().__init__()
@@ -26,6 +26,7 @@ class HealthBar(GameObject):
         self.__height = 15
         self.__max_hp = get_cfg("entities", "players", player_id.value, "max_health")
         self.__hp = self.__max_hp
+        self.__font = initialise_font("eurostile.ttf", 12)
 
     @property
     def ratio(self) -> float:
@@ -51,9 +52,10 @@ class HealthBar(GameObject):
         Args:
             surface_dst: the surface to render the health bar on.
         """
-
-        rect(surface_dst, self.__empty, (self.__x, self.__y, self.__width, self.__height))
-        rect(surface_dst, self.__full, (self.__x + 1, self.__y + 1, self.__width * self.ratio - 2, self.__height - 2))
+        color = (220, 220, 220) if self.ratio > 0.2 else ("red")
+        rect(surface_dst, self.__empty_color, (self.__x, self.__y, self.__width, self.__height))
+        rect(surface_dst, color, (self.__x + 1, self.__y + 1, self.__width * self.ratio - 2, self.__height - 2))
+        surface_dst.blit(self.__font.render(f"{self.player_id.name}", True, (0, 0, 0)), (self.__x + 5, self.__y + 2))
 
     def release(self) -> None:
         """Release the health bar."""
