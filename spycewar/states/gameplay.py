@@ -21,6 +21,7 @@ from spycewar.entities.render_group import RenderGroup
 from spycewar.entities.ships.thruster import Thrust
 from spycewar.enums.states import GameState
 from spycewar.events import Events
+from spycewar.states.game_context import GameContext
 from spycewar.states.state import State
 
 
@@ -37,7 +38,8 @@ class Gameplay(State):
         super().__init__()
 
         self.done = False
-        self.next_state = GameState.GAME_OVER
+        self.next_state = GameState.GAMEOVER
+        self.context = GameContext()
         self.__players = RenderGroup()
         self.__projectiles = RenderGroup()
         self.__explosions = RenderGroup()
@@ -45,7 +47,7 @@ class Gameplay(State):
         self.__heath_bars = RenderGroup()
         self.__powerups = RenderGroup()
 
-    def enter(self) -> None:
+    def enter(self, context: GameContext) -> None:
         """Resets the state to indicate the game is not done when entering the gameplay state."""
 
         logger.info("Entering gameplay state...")
@@ -55,8 +57,9 @@ class Gameplay(State):
         self.__heath_bars.add(HealthBar(PlayerId.PLAYER1, 10, 10))
         self.__heath_bars.add(HealthBar(PlayerId.PLAYER2, int(os.environ[SCREEN_WIDTH_ENV_VAR]) - 160, 10))
         self.__powerups.add(Powerup())
+        self.context = context
 
-    def exit(self) -> None:
+    def exit(self) -> GameContext:
         """Placeholder for cleanup actions when exiting the gameplay state.
 
         Currently does nothing.
@@ -67,6 +70,8 @@ class Gameplay(State):
         self.__thrusts.empty()
         self.__heath_bars.empty()
         self.__powerups.empty()
+
+        return self.context
 
     def handle_input(self, event: Event) -> None:
         """Handles player input events, delegating to the player's render group for processing.
@@ -316,5 +321,8 @@ class Gameplay(State):
     def __game_over(self, trigger_delay: int = 3000) -> None:
         """Post gameover event with some delay after the kill."""
         logger.info("Game over event triggered.")
+        winner = self.__players.sprites()[0].player_id.name if len(self.__players) == 1 else None
+        logger.info(f"Winner: {winner}")
+        self.context.set_data(winner=winner)
         gameover_event = Event(USEREVENT, event=Events.GAMEOVER, color=(0, 0, 0))
         pygame.time.set_timer(gameover_event, trigger_delay, 1)

@@ -18,7 +18,7 @@ class Thrust(GameObject):
         super().__init__()
 
         self.particle_group = Group()
-        self.__spawn_thrust(position, direction, 1)
+        self.__spawn_thrust(position, direction, 2)
 
     def handle_input(self, key: int, is_pressed: bool) -> None:
         """Handles the input for the explosion entity."""
@@ -43,7 +43,7 @@ class Thrust(GameObject):
     def release(self) -> None:
         """Releases the resources for the explosion entity."""
 
-    def __spawn_thrust(self, position: Vector2, direction: Vector2, num_particles: int) -> None:
+    def __spawn_thrust(self, position: list[int], direction: Vector2, num_particles: int) -> None:
         """Spawns particles for the explosion.
 
         Args:

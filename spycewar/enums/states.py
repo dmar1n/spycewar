@@ -15,4 +15,4 @@ class GameState(Enum):
     NONE = -1
     INTRO = 0
     GAMEPLAY = 1
-    GAME_OVER = 2
+    GAMEOVER = 2

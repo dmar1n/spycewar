@@ -62,6 +62,12 @@ class Player(GameObject):
         return f"{self.state.player_id.name} (health: {self.state.health}, position: {self._position})."
 
     @cached_property
+    def player_id(self) -> PlayerId:
+        """The player id of the player object."""
+
+        return self.state.player_id
+
+    @cached_property
     def image(self) -> Surface:
         """Image of the player."""
 
@@ -187,7 +193,7 @@ class Player(GameObject):
             elif self.state.player_id == PlayerId.PLAYER2:
                 self._position = Vector2(surface_dst.get_width() - 100, surface_dst.get_height() - 100)
 
-        self.__render_player_info(surface_dst)  # For debugging purposes
+        # self.__render_player_info(surface_dst)  # For debugging purposes
         self.__normalise_angle()
         self.__rotate_image()
         self.__wrap_position(surface_dst)

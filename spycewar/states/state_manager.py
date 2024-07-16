@@ -1,10 +1,12 @@
 """Module for managing game states."""
 
+from loguru import logger
 from pygame import Surface
 from pygame.event import Event
 from pygame.locals import USEREVENT
 
 from spycewar.enums.states import GameState
+from spycewar.states.game_context import GameContext
 from spycewar.states.gameover import GameOver
 from spycewar.states.gameplay import Gameplay
 from spycewar.states.intro import Intro
@@ -24,12 +26,12 @@ class StateManager:
         self.__states = {
             GameState.INTRO: Intro(),
             GameState.GAMEPLAY: Gameplay(),
-            GameState.GAME_OVER: GameOver(),
+            GameState.GAMEOVER: GameOver(),
         }
 
         self.__current_state_name = GameState.INTRO
         self.__current_state = self.__states[self.__current_state_name]
-        self.__current_state.enter()
+        self.__current_state.enter(GameContext())
 
     def process_events(self, event: Event) -> None:
         """Processes events by passing them to the current state.
@@ -67,10 +69,11 @@ class StateManager:
         self.__current_state.exit()
 
     def __change_state(self) -> None:
-        self.__current_state.exit()
-
+        context = self.__current_state.exit()
+        logger.info(f"Changing state from {self.__current_state_name} to {self.__current_state.next_state}")
+        logger.info(f"Context: {context.data}")
         previous_state = self.__current_state_name
         self.__current_state_name = self.__current_state.next_state
         self.__current_state = self.__states[self.__current_state_name]
         self.__current_state.previous_state = previous_state
-        self.__current_state.enter()
+        self.__current_state.enter(context)

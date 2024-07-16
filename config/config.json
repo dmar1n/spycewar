@@ -41,7 +41,7 @@
                     "spycewar.assets.images",
                     "generic_projectile.png"
                 ],
-                "base_damage": 10,
+                "base_damage": 30,
                 "speed": 0.4,
                 "cooldown": 200,
                 "lifetime": 2000
@@ -51,7 +51,7 @@
                     "spycewar.assets.images",
                     "generic_projectile.png"
                 ],
-                "base_damage": 20,
+                "base_damage": 35,
                 "speed": 0.5,
                 "cooldown": 100,
                 "lifetime": 1500
@@ -75,8 +75,8 @@
                 ],
                 "max_speed": 0.4,
                 "acceleration": 0.005,
-                "rotation_speed": 1.6,
-                "hyperspace_cooldown": 4000
+                "rotation_speed": 2.0,
+                "hyperspace_cooldown": 10000
             }
         },
         "powerups": {

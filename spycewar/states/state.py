@@ -6,6 +6,7 @@ from pygame import Surface
 from pygame.event import Event
 
 from spycewar.enums.states import GameState
+from spycewar.states.game_context import GameContext
 
 
 class State(ABC):
@@ -23,13 +24,14 @@ class State(ABC):
         self.done = False
         self.next_state = GameState.NONE
         self.previous_state = GameState.NONE
+        self.context = GameContext()
 
     @abstractmethod
-    def enter(self) -> None:
+    def enter(self, context: GameContext) -> None:
         """Abstract method to be implemented by subclasses for actions to perform when entering the state."""
 
     @abstractmethod
-    def exit(self) -> None:
+    def exit(self) -> GameContext:
         """Abstract method to be implemented by subclasses for actions to perform when exiting the state."""
 
     @abstractmethod

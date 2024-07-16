@@ -10,6 +10,7 @@ from spycewar.assets.fonts.utils import initialise_font, render_text
 from spycewar.constants import GAME_NAME
 from spycewar.enums.states import GameState
 from spycewar.events import Events
+from spycewar.states.game_context import GameContext
 from spycewar.states.state import State
 
 
@@ -28,6 +29,7 @@ class Intro(State):
         self.__render_subtext()
         self.next_state = GameState.GAMEPLAY
         self.done = False
+        self.context = GameContext()
 
         logger.info("Introduction state initialized.")
 
@@ -43,15 +45,16 @@ class Intro(State):
         font = initialise_font("microgramma.ttf", 48)
         self.__title = render_text(font, " ".join(f"{GAME_NAME}"))
 
-    def enter(self) -> None:
+    def enter(self, context: GameContext) -> None:
         """Ensures the state is not done when entering the introduction state."""
         logger.info("Entering introduction state...")
         intro_event = Event(USEREVENT, event=Events.INTRO, color=(0, 0, 0))
         pygame.event.post(intro_event)
         self.done = False
 
-    def exit(self) -> None:
+    def exit(self) -> GameContext:
         """Exits the introduction state, currently doing nothing."""
+        return self.context
 
     def handle_input(self, event: pygame.event.Event) -> None:
         """Handles input events to transition to the next state."""
