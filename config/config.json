@@ -4,7 +4,7 @@
             1024,
             768
         ],
-        "debug_mode": true
+        "debug_mode": false
     },
     "states": {
         "intro": {}

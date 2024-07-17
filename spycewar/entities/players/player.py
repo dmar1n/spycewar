@@ -206,7 +206,7 @@ class Player(GameObject):
             pygame.draw.rect(surface_dst, (255, 0, 0), self.rect, 1)
 
     def release(self) -> None:
-        pass
+        """Releases the player object and its resources."""
 
     def __get_mask(self) -> None:
         """Gets the mask of the player's image."""
@@ -255,6 +255,7 @@ class Player(GameObject):
 
     def __rotate_image(self) -> None:
         """Rotates the player image to the current angle if it has changed since the last frame."""
+
         if self.__last_angle != self.__ship_state.angle:
             self.__rotated_image = pygame.transform.rotate(self.image, self.__ship_state.angle)
             self.__last_angle = self.__ship_state.angle
@@ -301,6 +302,9 @@ class Player(GameObject):
         Args:
             backwards: a boolean indicating whether the object should go backwards.
             offset: the offset from the player's position to spawn the object.
+
+        Returns:
+            The velocity and position of the object.
         """
         angle_radians = math.radians(self.__ship_state.angle)
         direction_vector = -Vector2(math.sin(angle_radians), math.cos(angle_radians))
