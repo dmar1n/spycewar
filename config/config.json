@@ -3,7 +3,8 @@
         "screen_size": [
             1024,
             768
-        ]
+        ],
+        "debug_mode": true
     },
     "states": {
         "intro": {}
@@ -33,7 +34,8 @@
                     "hyperspace": "u",
                     "shield": "o"
                 }
-            }
+            },
+            "random_start_position": false
         },
         "projectiles": {
             "player1": {
@@ -43,7 +45,7 @@
                 ],
                 "base_damage": 30,
                 "speed": 0.4,
-                "cooldown": 200,
+                "cooldown": 70,
                 "lifetime": 2000
             },
             "player2": {

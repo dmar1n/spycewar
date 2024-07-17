@@ -41,8 +41,8 @@ class GameOver(State):
 
         font = initialise_font("eurostile.ttf", 24)
         logger.debug(f"Current context data: {self.context.data}")
-        result = f"{self.context.data.get('winner')} wins!" if self.context.data.get("winner") else "It's a draw!"
-        self.__result = render_text(font, result)
+        result = f"{self.context.data.get('winner')} wins!" if self.context.data.get("winner") else "Draw!"
+        self.__result = render_text(font, result.title())
 
     def __render_subtext(self) -> None:
         """Renders the subtitle text to be displayed on the gameover screen."""
@@ -92,7 +92,7 @@ class GameOver(State):
             surface_dst: the surface to render the title text to.
         """
 
-        position = surface_dst.get_width() // 2, surface_dst.get_height() // 2
+        position = surface_dst.get_width() // 2, surface_dst.get_height() // 2.1
         rect = self.__title.get_rect(center=position)
         surface_dst.blit(self.__title, rect.topleft)
 
@@ -114,7 +114,7 @@ class GameOver(State):
             surface_dst: the surface to render the result text to.
         """
 
-        position = surface_dst.get_width() // 2, surface_dst.get_height() // 1.5
+        position = surface_dst.get_width() // 2, surface_dst.get_height() // 1.7
         rect = self.__result.get_rect(center=position)
         surface_dst.blit(self.__result, rect.topleft)
 

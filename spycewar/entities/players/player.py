@@ -183,17 +183,17 @@ class Player(GameObject):
             surface_dst: The surface to render the player to.
         """
         if not self._position:
-            # Randomise the player's position if it is not set
-            # self._position = Vector2(
-            #     randint(20, surface_dst.get_width() - 20),
-            #     randint(20, surface_dst.get_height()) - 20,
-            # )
-            if self.state.player_id == PlayerId.PLAYER1:
+            if get_cfg("entities", "players", "random_start_position"):
+                self._position = Vector2(
+                    randint(20, surface_dst.get_width() - 20),
+                    randint(20, surface_dst.get_height()) - 20,
+                )
+            elif self.state.player_id == PlayerId.PLAYER1:
                 self._position = Vector2(100, 100)
+                self.__ship_state.angle = 180
             elif self.state.player_id == PlayerId.PLAYER2:
                 self._position = Vector2(surface_dst.get_width() - 100, surface_dst.get_height() - 100)
 
-        # self.__render_player_info(surface_dst)  # For debugging purposes
         self.__normalise_angle()
         self.__rotate_image()
         self.__wrap_position(surface_dst)
@@ -201,8 +201,9 @@ class Player(GameObject):
         image_rect = self.__rotated_image.get_rect(center=self._position)
         surface_dst.blit(self.__rotated_image, image_rect)
 
-        # for debugging purposes
-        # pygame.draw.rect(surface_dst, (255, 0, 0), self.rect, 1)
+        if get_cfg("game", "debug_mode"):
+            self.__render_player_info(surface_dst)
+            pygame.draw.rect(surface_dst, (255, 0, 0), self.rect, 1)
 
     def release(self) -> None:
         pass
