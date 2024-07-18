@@ -18,6 +18,7 @@ from spycewar.entities.powerup import Powerup
 from spycewar.entities.projectiles.factory import ProjectileFactory
 from spycewar.entities.projectiles.projectile import Projectile
 from spycewar.entities.render_group import RenderGroup
+from spycewar.entities.ships.shield_bar import ShieldBar
 from spycewar.entities.ships.thruster import Thrust
 from spycewar.enums.states import GameState
 from spycewar.events import Events
@@ -45,6 +46,7 @@ class Gameplay(State):
         self.__explosions = RenderGroup()
         self.__thrusts = RenderGroup()
         self.__heath_bars = RenderGroup()
+        self.__shield_bars = RenderGroup()
         self.__powerups = RenderGroup()
 
     def enter(self, context: GameContext) -> None:
@@ -56,6 +58,8 @@ class Gameplay(State):
         self.__players.add(Player(PlayerId.PLAYER2))
         self.__heath_bars.add(HealthBar(PlayerId.PLAYER1, 10, 10))
         self.__heath_bars.add(HealthBar(PlayerId.PLAYER2, int(os.environ[SCREEN_WIDTH_ENV_VAR]) - 160, 10))
+        self.__shield_bars.add(ShieldBar(PlayerId.PLAYER1, 10, 30))
+        self.__shield_bars.add(ShieldBar(PlayerId.PLAYER2, int(os.environ[SCREEN_WIDTH_ENV_VAR]) - 160, 30))
         self.__powerups.add(Powerup())
         self.context = context
 
@@ -69,6 +73,7 @@ class Gameplay(State):
         self.__explosions.empty()
         self.__thrusts.empty()
         self.__heath_bars.empty()
+        self.__shield_bars.empty()
         self.__powerups.empty()
 
         return self.context
@@ -96,6 +101,7 @@ class Gameplay(State):
         self.__explosions.process_events(event)
         self.__thrusts.process_events(event)
         self.__heath_bars.process_events(event)
+        self.__shield_bars.process_events(event)
         self.__powerups.process_events(event)
 
     def update(self, delta_time: float) -> None:
@@ -110,6 +116,7 @@ class Gameplay(State):
         self.__explosions.update(delta_time)
         self.__thrusts.update(delta_time)
         self.__heath_bars.update(delta_time)
+        self.__shield_bars.update(delta_time)
         self.__powerups.update(delta_time)
         self.__detect_collisions()
 
@@ -125,6 +132,7 @@ class Gameplay(State):
         self.__explosions.render(surface_dst)
         self.__thrusts.render(surface_dst)
         self.__heath_bars.render(surface_dst)
+        self.__shield_bars.render(surface_dst)
         self.__powerups.render(surface_dst)
 
     def release(self) -> None:
@@ -138,6 +146,7 @@ class Gameplay(State):
         self.__explosions.release()
         self.__thrusts.release()
         self.__heath_bars.release()
+        self.__shield_bars.release()
         self.__powerups.release()
 
     def __handle_events(self, event: Event) -> None:
@@ -282,6 +291,8 @@ class Gameplay(State):
         check if the player is still in the game (results group).
         """
         for player in groupcollide(self.__players, self.__projectiles, False, False, collide_rect):
+            if player.is_shielded and player.state.shield > 0:
+                continue
             if results := groupcollide(self.__players, self.__projectiles, False, True, collide_mask):
                 if player in results:
                     self.__spawn_explosion(results[player][0].pos)

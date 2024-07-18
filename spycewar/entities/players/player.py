@@ -34,7 +34,7 @@ class Player(GameObject):
         specs: the specifications of the player object.
         controls: the controls of the player object.
         cooldown: the cooldown time between shots.
-        hyperspace_cooldown: the cooldown time between hyperspaceation.
+        hyperspace_cooldown: the cooldown time between teleports.
     """
 
     def __init__(self, player: PlayerId) -> None:
@@ -93,13 +93,13 @@ class Player(GameObject):
 
     @property
     def hyperspace_cooldown(self) -> float:
-        """Cooldown time between hyperspaceation."""
+        """Cooldown time between teleports."""
 
         return self.__hyperspace_cooldown
 
     @hyperspace_cooldown.setter
     def hyperspace_cooldown(self, value: float) -> None:
-        """Sets the cooldown time between hyperspaceation."""
+        """Sets the cooldown time between teleports."""
 
         self.__hyperspace_cooldown = max(value, 0.0)
 
@@ -108,6 +108,18 @@ class Player(GameObject):
         """Specifications of the player."""
 
         return self.__specs
+
+    @property
+    def is_shielded(self) -> bool:
+        """Returns whether the player is shielded."""
+
+        return self.__ship_state.is_shield_enabled
+
+    @property
+    def can_be_damaged(self) -> bool:
+        """Returns whether the player can receive damage."""
+
+        return not (self.__ship_state.is_shield_enabled and self.state.shield > 0)
 
     def handle_input(self, key: int, is_pressed: bool) -> None:
         """Handles the player input events to control the player object.
@@ -123,6 +135,8 @@ class Player(GameObject):
             self.__ship_state.is_turning_left = is_pressed
         if key == self.__controls.right:
             self.__ship_state.is_turning_right = is_pressed
+        if key == self.__controls.shield:
+            self.__ship_state.is_shield_enabled = is_pressed
         if key == self.__controls.hyperspace and is_pressed and self.hyperspace_cooldown <= 0.0:
             self.__hyperspace()
         if key == self.__controls.fire and self.cooldown <= 0.0 and is_pressed:
@@ -131,10 +145,12 @@ class Player(GameObject):
     def process_events(self, event: Event) -> None:
         """Process events for other parts of the app."""
 
-        if event.event == Events.PLAYER_HIT and event.player == self:
+        if self.can_be_damaged and (event.event == Events.PLAYER_HIT and event.player == self):
             self.state.take_damage(event.damage)
         if event.event == Events.HEALTH_POWERUP_PICKUP:
             self.state.heal(event.value)
+        if event.event == Events.SHIELD_ACTIVATED and event.player == self:
+            self.__ship_state.is_shield_enabled = True
 
     def update(self, delta_time: float) -> None:
         """Updates the player's position based on the input and the time passed since the last frame.
@@ -155,6 +171,9 @@ class Player(GameObject):
             self.__ship_state.angle += self.__specs.rotation_speed
         if self.__ship_state.is_turning_right:
             self.__ship_state.angle -= self.__specs.rotation_speed
+
+        if self.__ship_state.is_shield_enabled and self.state.shield > 0:
+            self.__shield(delta_time)
 
         self._position += self.__ship_state.velocity * delta_time
         self.__ship_state.speed = self.__ship_state.velocity.length()
@@ -201,6 +220,9 @@ class Player(GameObject):
         image_rect = self.__rotated_image.get_rect(center=self._position)
         surface_dst.blit(self.__rotated_image, image_rect)
 
+        if self.__ship_state.is_shield_enabled and self.state.shield > 0:
+            pygame.draw.circle(surface_dst, (0, 0, 200), self._position, self.image.get_height() // 2, 2)
+
         if get_cfg("game", "debug_mode"):
             self.__render_player_info(surface_dst)
             pygame.draw.rect(surface_dst, (255, 0, 0), self.rect, 1)
@@ -225,15 +247,15 @@ class Player(GameObject):
         x = 10 if self.state.player_id == PlayerId.PLAYER1 else surface_dst.get_width() - 250
 
         font = initialise_font("eurostile.ttf", 14)
-        surface_dst.blit(render_text(font, self.state.player_id.value), (x, 10))
         surface_dst.blit(render_text(font, f"Speed: {self.__ship_state.speed:.2f}"), (x, 30))
         surface_dst.blit(render_text(font, f"Angle: {self.__ship_state.angle:.2f}"), (x, 50))
+        surface_dst.blit(render_text(font, f"Cooldown: {self.cooldown:.2f}"), (x, 70))
         surface_dst.blit(render_text(font, f"Position: {self._position}"), (x, 90))
         surface_dst.blit(render_text(font, f"Velocity: {self.__ship_state.velocity}"), (x, 110))
-        surface_dst.blit(render_text(font, f"Cooldown: {self.cooldown:.2f}"), (x, 70))
-        surface_dst.blit(render_text(font, f"hyperspace Cooldown: {self.hyperspace_cooldown:.2f}"), (x, 170))
         surface_dst.blit(render_text(font, f"Rect: {self.rect}"), (x, 130))
         surface_dst.blit(render_text(font, f"Health: {self.state.health}"), (x, 150))
+        surface_dst.blit(render_text(font, f"hyperspace Cooldown: {self.hyperspace_cooldown:.2f}"), (x, 170))
+        surface_dst.blit(render_text(font, f"Shielded: {self.state.shield}"), (x, 190))
 
     def __wrap_position(self, surface_dst: Surface) -> None:
         """Wraps the player's position around the screen if it goes out of bounds.
@@ -295,6 +317,13 @@ class Player(GameObject):
         velocity, position = self.__compute_trajectory(backwards=True, offset=-5, speed=2.5)
         thrust_event = Event(USEREVENT, event=Events.THRUST, pos=position, dir_=2 * velocity)
         pygame.event.post(thrust_event)
+
+    def __shield(self, delta_time: float) -> None:
+        """Applies a shield to the player's ship."""
+
+        self.state.shield -= int(delta_time)
+        shield_event = Event(USEREVENT, event=Events.SHIELD_ACTIVATED, player=self)
+        pygame.event.post(shield_event)
 
     def __compute_trajectory(self, speed: float, backwards: bool = False, offset: int = 10) -> tuple[Vector2, Vector2]:
         """Computes the trajectory of the object based on the player's position and angle.
