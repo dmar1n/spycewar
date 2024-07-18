@@ -1,0 +1,97 @@
+{
+    "game": {
+        "screen_size": [
+            1024,
+            768
+        ],
+        "debug_mode": false
+    },
+    "states": {
+        "intro": {}
+    },
+    "entities": {
+        "players": {
+            "player1": {
+                "max_health": 500,
+                "fire_event": 1,
+                "controls": {
+                    "thrust": "s",
+                    "fire": "w",
+                    "left": "a",
+                    "right": "d",
+                    "hyperspace": "q",
+                    "shield": "e"
+                }
+            },
+            "player2": {
+                "max_health": 600,
+                "fire_event": 2,
+                "controls": {
+                    "thrust": "k",
+                    "fire": "i",
+                    "left": "j",
+                    "right": "l",
+                    "hyperspace": "u",
+                    "shield": "o"
+                }
+            },
+            "random_start_position": false
+        },
+        "projectiles": {
+            "player1": {
+                "file": [
+                    "spycewar.assets.images",
+                    "generic_projectile.png"
+                ],
+                "base_damage": 30,
+                "speed": 0.4,
+                "cooldown": 70
+            },
+            "player2": {
+                "file": [
+                    "spycewar.assets.images",
+                    "generic_projectile.png"
+                ],
+                "base_damage": 35,
+                "speed": 0.5,
+                "cooldown": 100
+            }
+        },
+        "ships": {
+            "player1": {
+                "file": [
+                    "spycewar.assets.images",
+                    "player1.png"
+                ],
+                "max_speed": 0.5,
+                "acceleration": 0.004,
+                "rotation_speed": 1.8,
+                "hyperspace_cooldown": 5000,
+                "max_shield": 5000
+            },
+            "player2": {
+                "file": [
+                    "spycewar.assets.images",
+                    "player2.png"
+                ],
+                "max_speed": 0.4,
+                "acceleration": 0.005,
+                "rotation_speed": 2.0,
+                "hyperspace_cooldown": 10000,
+                "max_shield": 6000
+            }
+        },
+        "powerups": {
+            "health": {
+                "file": [
+                    "spycewar.assets.images",
+                    "fixer.png"
+                ],
+                "probability": 0.001,
+                "max_on_screen": 2,
+                "base_duration": 100000,
+                "base_value": 100
+            }
+        }
+    }
+}
