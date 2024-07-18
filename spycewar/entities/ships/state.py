@@ -24,3 +24,4 @@ class ShipState:
     is_accelerating: bool = False
     is_turning_left: bool = False
     is_turning_right: bool = False
+    is_shield_enabled: bool = False

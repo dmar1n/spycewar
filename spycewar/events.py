@@ -13,6 +13,7 @@ class Events(Enum):
     `PLAYER_DIED`: A player died. Params: player (Player).
     `THRUST`: A player is thrusting. Params: `pos` (position) and `dir_` (velocity).
     `THRUST_EXHAUSTED`: A player stopped thrusting. Params: thrust.
+    `SHIELD_ACTIVATED`: A player activated the shield. Params: player (`Player`).
     `PROJECTILE_OUT_OF_SCREEN`: A projectile went out of the screen. Params: projectile (`Projectile`).
     `EXPLOSION_OVER`: An explosion is over. Params: explosion.
     `HEALTH_POWERUP_PICKUP`: A health power-up is spawned. Params: power-up (`PowerUp`) and player (`Player`).
@@ -27,6 +28,7 @@ class Events(Enum):
     PLAYER_DIED = auto()
     THRUST = auto()
     THRUST_EXHAUSTED = auto()
+    SHIELD_ACTIVATED = auto()
     PROJECTILE_OUT_OF_SCREEN = auto()
     EXPLOSION_OVER = auto()
     HEALTH_POWERUP_PICKUP = auto()

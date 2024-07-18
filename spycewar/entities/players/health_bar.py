@@ -1,6 +1,5 @@
 """Module for the health bar of the players."""
 
-from loguru import logger
 from pygame import Surface
 from pygame.draw import rect
 from pygame.event import Event
@@ -39,9 +38,10 @@ class HealthBar(GameObject):
 
     def process_events(self, event: Event) -> None:
         if event.event == Events.PLAYER_HIT and event.player.state.player_id == self.player_id:
-            self.__take_damage(event.damage)
+            self.__hp = event.player.state.health
+
         if event.event == Events.HEALTH_POWERUP_PICKUP and event.player.state.player_id == self.player_id:
-            self.__restore_health(event.value)
+            self.__hp = event.player.state.health
 
     def update(self, delta_time: float) -> None:
         """Update the health bar."""
@@ -59,25 +59,3 @@ class HealthBar(GameObject):
 
     def release(self) -> None:
         """Release the health bar."""
-
-    def __take_damage(self, damage: int) -> None:
-        """Cause the player to take damage.
-
-        Args:
-            damage: the amount of damage to take.
-        """
-
-        self.__hp -= damage
-        self.__hp = max(0, self.__hp)
-        logger.info(f"Player {self.player_id} took {damage} damage, health is now {self.__hp}")
-
-    def __restore_health(self, heal: int) -> None:
-        """Restore health to the player.
-
-        Args:
-            heal: the amount of health to restore.
-        """
-
-        self.__hp += heal
-        self.__hp = min(self.__max_hp, self.__hp)
-        logger.info(f"Player {self.player_id} healed {heal} health, health is now {self.__hp}")

@@ -32,6 +32,7 @@ class ShipSpecs:
     fire_event: Events
     image: Surface
     max_speed: float
+    max_shield: float
     acceleration: float
     rotation_speed: float
     projectile_speed: float
@@ -51,6 +52,7 @@ class ShipSpecs:
 
         fire_event = Events(get_cfg("entities", "players", player.value, "fire_event"))
         max_speed = get_cfg("entities", "ships", player.value, "max_speed")
+        max_shield = get_cfg("entities", "ships", player.value, "max_shield")
         acceleration = get_cfg("entities", "ships", player.value, "acceleration")
         rotation_speed = get_cfg("entities", "ships", player.value, "rotation_speed")
         projectile_speed = get_cfg("entities", "projectiles", player.value, "speed")
@@ -62,6 +64,7 @@ class ShipSpecs:
             fire_event,
             image,
             max_speed,
+            max_shield,
             acceleration,
             rotation_speed,
             projectile_speed,
