@@ -3,8 +3,8 @@
 from abc import ABC, abstractmethod
 
 from pygame import Rect, Surface, Vector2
+from pygame.event import Event
 from pygame.sprite import Sprite
-from yaml import Event
 
 from spycewar.config import get_cfg
 

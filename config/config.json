@@ -4,6 +4,12 @@
             1024,
             768
         ],
+        "music": {
+            "file": [
+                "spycewar.assets.sounds",
+                "intro.mp3"
+            ]
+        },
         "debug_mode": false
     },
     "states": {
