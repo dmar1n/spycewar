@@ -1,5 +1,7 @@
 """Module for the introduction state of the game."""
 
+from importlib import resources
+
 import pygame
 from loguru import logger
 from pygame import Surface
@@ -7,6 +9,8 @@ from pygame.event import Event
 from pygame.locals import KEYDOWN, USEREVENT
 
 from spycewar.assets.fonts.utils import initialise_font, render_text
+from spycewar.assets.sounds.utils import load_music
+from spycewar.config import get_cfg
 from spycewar.constants import GAME_NAME
 from spycewar.enums.states import GameState
 from spycewar.events import Events
@@ -33,24 +37,22 @@ class Intro(State):
 
         logger.info("Introduction state initialized.")
 
-    def __render_subtext(self) -> None:
-        """Renders the subtitle text to be displayed on the introduction screen."""
-
-        font = initialise_font("eurostile.ttf", 18)
-        self.__sub = render_text(font, "Press any key to continue...")
-
-    def __render_game_title(self) -> None:
-        """Renders the game title text to be displayed on the introduction screen."""
-
-        font = initialise_font("microgramma.ttf", 48)
-        self.__title = render_text(font, " ".join(f"{GAME_NAME}"))
-
     def enter(self, context: GameContext) -> None:
         """Ensures the state is not done when entering the introduction state."""
+
         logger.info("Entering introduction state...")
         intro_event = Event(USEREVENT, event=Events.INTRO, color=(0, 0, 0))
         pygame.event.post(intro_event)
+        self.__load_and_play_game_music()
         self.done = False
+
+    def __load_and_play_game_music(self) -> None:
+        """Loads and plays the game music for the introduction state."""
+
+        file_dir, filename = get_cfg("game", "music", "file")
+        file_path = resources.files(file_dir).joinpath(filename)
+        load_music(file_path)
+        pygame.mixer.music.play()
 
     def exit(self) -> GameContext:
         """Exits the introduction state, currently doing nothing."""
@@ -78,6 +80,21 @@ class Intro(State):
         self.__display_title(surface_dst)
         self.__display_subtitle(surface_dst)
 
+    def release(self) -> None:
+        """Releases resources used by the introduction state, currently doing nothing."""
+
+    def __render_subtext(self) -> None:
+        """Renders the subtitle text to be displayed on the introduction screen."""
+
+        font = initialise_font("eurostile.ttf", 18)
+        self.__sub = render_text(font, "Press any key to continue...")
+
+    def __render_game_title(self) -> None:
+        """Renders the game title text to be displayed on the introduction screen."""
+
+        font = initialise_font("microgramma.ttf", 48)
+        self.__title = render_text(font, " ".join(f"{GAME_NAME}"))
+
     def __display_subtitle(self, surface_dst: Surface) -> None:
         """Displays the subtitle text on the given surface.
 
@@ -99,6 +116,3 @@ class Intro(State):
         position = surface_dst.get_width() // 2, surface_dst.get_height() // 2
         rect = self.__title.get_rect(center=position)
         surface_dst.blit(self.__title, rect.topleft)
-
-    def release(self) -> None:
-        """Releases resources used by the introduction state, currently doing nothing."""
