@@ -1,7 +1,9 @@
 # SPYCEWAR!
 
-**Author**: Daniel Marín 
-**Date**: July 17, 2024  
+**Author**: Daniel Marín
+
+**Initial version**: July 2024  
+
 **Repository**: [https://github.com/dmar1n/spycewar](https://github.com/dmar1n/spycewar)
 
 ## Description
