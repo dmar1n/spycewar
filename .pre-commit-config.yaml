@@ -49,7 +49,7 @@ repos:
         args: [--all]
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.19.1
+    rev: v3.20.0
     hooks:
       - id: pyupgrade
         args: [--py311-plus]
@@ -69,20 +69,20 @@ repos:
         stages: [manual]
 
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.6.0
+    rev: v4.8.3
     hooks:
       - id: commitizen
         stages: [commit-msg]
 
   # FORMATTERS
   - repo: https://github.com/dmar1n/lazy-log-formatter
-    rev: 0.4.4
+    rev: 0.5.0
     hooks:
       - id: lazy-log-formatter
-        args: ["--fix"]
+        # args: ["--fix"]
 
   - repo: https://github.com/asottile/add-trailing-comma
-    rev: v3.1.0
+    rev: v3.2.0
     hooks:
       - id: add-trailing-comma
 
@@ -107,12 +107,12 @@ repos:
         language_version: python3.12
 
   - repo: https://github.com/keewis/blackdoc
-    rev: v0.3.9
+    rev: v0.4.1
     hooks:
       - id: blackdoc
 
   - repo: https://github.com/myint/docformatter
-    rev: v1.7.5
+    rev: v1.7.7
     hooks:
       - id: docformatter
         args: ["--in-place", "--wrap-summaries=119", "--wrap-descriptions=99"]
@@ -125,7 +125,7 @@ repos:
   # LINTERS
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v1.15.0"
+    rev: "v1.16.1"
     hooks:
       - id: mypy
         args:
@@ -148,7 +148,7 @@ repos:
           - pytest
 
   - repo: https://github.com/pycqa/flake8
-    rev: 7.2.0
+    rev: 7.3.0
     hooks:
       - id: flake8
         language_version: python3.12
@@ -162,7 +162,7 @@ repos:
           - "--ignore=W503,E203,B019" # https://flake8.pycqa.org/en/latest/user/error-codes.html
 
   - repo: https://github.com/pycqa/pylint
-    rev: v3.3.6
+    rev: v3.3.7
     hooks:
       - id: pylint
         additional_dependencies:

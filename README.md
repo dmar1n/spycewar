@@ -102,3 +102,33 @@ Future extensions and enhancements for *Spycewar!* could include:
 - An installer for different operating systems.
 - Ship redesigns.
 - In-game options menu.
+
+## Using uv with Spycewar
+
+To install dependencies and run the game using [uv](https://github.com/astral-sh/uv):
+
+1. **Create a virtual environment** (if not already active):
+
+   ```sh
+   uv venv
+   ```
+
+2. **Install dependencies in editable mode:**
+
+   ```sh
+   uv pip install -e .
+   ```
+
+3. **Run the game:**
+
+   ```sh
+   spycewar
+   # or
+   python -m spycewar
+   ```
+
+If you update dependencies in `pyproject.toml`, re-run:
+
+```sh
+uv pip install -e .
+```
