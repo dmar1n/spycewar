@@ -1,0 +1,11 @@
+[project]
+name = "spycewar"
+version = "1.0.2"
+description = "A game inspired by Spacewar!"
+authors = ["Daniel Marín"]
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = ["pygame", "pre-commit", "loguru"]
+
+[project.scripts]
+spycewar = "spycewar"
