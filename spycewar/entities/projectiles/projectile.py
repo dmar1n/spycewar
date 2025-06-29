@@ -34,15 +34,15 @@ class Projectile(GameObject):
     """
 
     def __init__(self, position: Vector2, velocity: Vector2) -> None:
+        """Initialise the projectile."""
         super().__init__()
         self._position = Vector2(position)
         self.__velocity = Vector2(velocity)
-
         self.rect = self.image.get_rect()
         self.rect.topleft = self._position
 
     def handle_input(self, key: int, is_pressed: bool) -> None:
-        """Handles the input of the player.
+        """Handle the input of the player.
 
         Args:
             key: the key pressed by the player.
@@ -57,7 +57,7 @@ class Projectile(GameObject):
         """
 
     def update(self, delta_time: float) -> None:
-        """Updates the projectile's position based on its velocity and the time passed.
+        """Update the projectile's position based on its velocity and the time passed.
 
         The projectile should be kept on the screen a given time before being released. If it goes out of bounds,
         it should reappear on the other side of the screen.
@@ -65,22 +65,22 @@ class Projectile(GameObject):
         Args:
             delta_time: the time passed since the last frame.
         """
-
         distance = self.__velocity * delta_time
-
         if self._in_bounds(distance):
             self._position += distance
         else:
-            kill_event = Event(USEREVENT, event=Events.PROJECTILE_OUT_OF_SCREEN, projectile=self)
+            kill_event = Event(
+                USEREVENT,
+                event=Events.PROJECTILE_OUT_OF_SCREEN,
+                projectile=self,
+            )
             pygame.event.post(kill_event)
-
         self.rect = self.image.get_rect()
         self.rect.topleft = self._position
 
     def render(self, surface_dst: Surface) -> None:
-        """Renders the projectile to the given surface at the projectile's position."""
-
+        """Render the projectile to the given surface at the projectile's position."""
         surface_dst.blit(self.image, self._position)
 
     def release(self) -> None:
-        """Releases any resources from the projectile."""
+        """Release any resources from the projectile."""

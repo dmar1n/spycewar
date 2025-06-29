@@ -29,31 +29,33 @@ class PlayerState:
     @health.setter
     def health(self, value: int) -> None:
         """Set the health of the player."""
-
         self.__health = max(0, min(self.__max_health, value))
 
     @property
     def shield(self) -> int:
         """Return the shield of the player."""
-
         return self.__shield
 
     @shield.setter
     def shield(self, value: int) -> None:
         """Set the shield of the player."""
-
         self.__shield = max(0, min(self.__max_shield, value))
 
     def __init__(self, player_id: PlayerId):
+        """Initialise the player state."""
         self.player_id = player_id
-        self.__max_health = get_cfg("entities", "players", player_id.value, "max_health")
+        self.__max_health = get_cfg(
+            "entities",
+            "players",
+            player_id.value,
+            "max_health",
+        )
         self.__health = self.__max_health
         self.__max_shield = get_cfg("entities", "ships", player_id.value, "max_shield")
         self.__shield = self.__max_shield
 
     def is_alive(self) -> bool:
         """Return whether the player is alive."""
-
         return self.__health > 0
 
     def take_damage(self, damage: int) -> None:
@@ -62,7 +64,6 @@ class PlayerState:
         Args:
             damage: the amount of damage to take.
         """
-
         self.health -= damage
 
     def heal(self, amount: int) -> None:
@@ -70,5 +71,4 @@ class PlayerState:
 
         Intended for power-ups.
         """
-
         self.__health = min(self.__max_health, self.__health + amount)

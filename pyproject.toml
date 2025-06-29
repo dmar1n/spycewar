@@ -2,10 +2,13 @@
 name = "spycewar"
 version = "1.0.2"
 description = "A game inspired by Spacewar!"
-authors = ["Daniel Marín"]
+authors = [{ name = "Daniel Marín" }]
 readme = "README.md"
 requires-python = ">=3.8"
-dependencies = ["pygame", "pre-commit", "loguru"]
+dependencies = ["pygame", "pre-commit", "rich>=14.0.0"]
+
+[tool.setuptools.packages.find]
+include = ["spycewar", "config"]
 
 [project.scripts]
-spycewar = "spycewar"
+spycewar = "spycewar:main"

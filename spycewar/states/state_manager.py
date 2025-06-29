@@ -1,15 +1,17 @@
 """Module for managing game states."""
 
-from loguru import logger
 from pygame import Surface
 from pygame.event import Event
 from pygame.locals import USEREVENT
 
 from spycewar.enums.states import GameState
+from spycewar.logger import get_logger
 from spycewar.states.game_context import GameContext
 from spycewar.states.gameover import GameOver
 from spycewar.states.gameplay import Gameplay
 from spycewar.states.intro import Intro
+
+logger = get_logger()
 
 
 class StateManager:
@@ -22,19 +24,18 @@ class StateManager:
     """
 
     def __init__(self) -> None:
-        """Initializes the StateManager with predefined states."""
+        """Initialise the StateManager with predefined states."""
         self.__states = {
             GameState.INTRO: Intro(),
             GameState.GAMEPLAY: Gameplay(),
             GameState.GAMEOVER: GameOver(),
         }
-
         self.__current_state_name = GameState.INTRO
         self.__current_state = self.__states[self.__current_state_name]
         self.__current_state.enter(GameContext())
 
     def process_events(self, event: Event) -> None:
-        """Processes events by passing them to the current state.
+        """Process events by passing them to the current state.
 
         Differentiates between USEREVENT and other events, handling them appropriately.
 
@@ -47,7 +48,7 @@ class StateManager:
             self.__current_state.handle_input(event)
 
     def update(self, delta_time: int) -> None:
-        """Updates the current state.
+        """Update the current state.
 
         Should be called every frame to update the state logic.
 
@@ -56,22 +57,25 @@ class StateManager:
         """
         if self.__current_state.done:
             self.__change_state()
-
         self.__current_state.update(delta_time)
 
     def render(self, surface_dst: Surface) -> None:
-        """Renders the current state to the given surface."""
+        """Render the current state to the given surface."""
         self.__current_state.render(surface_dst)
 
     def release(self) -> None:
-        """Releases resources associated with the current state."""
+        """Release resources associated with the current state."""
         self.__current_state.release()
         self.__current_state.exit()
 
     def __change_state(self) -> None:
         context = self.__current_state.exit()
-        logger.info(f"Changing state from {self.__current_state_name} to {self.__current_state.next_state}")
-        logger.info(f"Context: {context.data}")
+        logger.info(
+            "Changing state from %s to %s",
+            self.__current_state_name,
+            self.__current_state.next_state,
+        )
+        logger.info("Context: %s", context.data)
         previous_state = self.__current_state_name
         self.__current_state_name = self.__current_state.next_state
         self.__current_state = self.__states[self.__current_state_name]

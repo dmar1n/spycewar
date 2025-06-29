@@ -3,7 +3,6 @@
 import os
 
 import pygame
-from loguru import logger
 from pygame import Surface, Vector2
 from pygame.event import Event
 from pygame.locals import KEYDOWN, KEYUP, USEREVENT
@@ -22,22 +21,23 @@ from spycewar.entities.ships.shield_bar import ShieldBar
 from spycewar.entities.ships.thruster import Thrust
 from spycewar.enums.states import GameState
 from spycewar.events import Events
+from spycewar.logger import get_logger
 from spycewar.states.game_context import GameContext
 from spycewar.states.state import State
 
+logger = get_logger()
+
 
 class Gameplay(State):
-    """Represents the gameplay state in the game's state machine.
+    """Represent the gameplay state in the game's state machine.
 
     This state handles the main gameplay logic, including player actions, game updates, and
     transitions to other states.
     """
 
     def __init__(self) -> None:
-        """Initializes the gameplay state, setting up the initial state flags and game entities."""
-
+        """Initialise the gameplay state, setting up the initial state flags and game entities."""
         super().__init__()
-
         self.done = False
         self.next_state = GameState.GAMEOVER
         self.context = GameContext()
@@ -50,21 +50,32 @@ class Gameplay(State):
         self.__powerups = RenderGroup()
 
     def enter(self, context: GameContext) -> None:
-        """Resets the state to indicate the game is not done when entering the gameplay state."""
-
+        """Reset the state to indicate the game is not done when entering the gameplay state."""
         logger.info("Entering gameplay state...")
         self.done = False
         self.__players.add(Player(PlayerId.PLAYER1))
         self.__players.add(Player(PlayerId.PLAYER2))
         self.__heath_bars.add(HealthBar(PlayerId.PLAYER1, 10, 10))
-        self.__heath_bars.add(HealthBar(PlayerId.PLAYER2, int(os.environ[SCREEN_WIDTH_ENV_VAR]) - 160, 10))
+        self.__heath_bars.add(
+            HealthBar(
+                PlayerId.PLAYER2,
+                int(os.environ[SCREEN_WIDTH_ENV_VAR]) - 160,
+                10,
+            ),
+        )
         self.__shield_bars.add(ShieldBar(PlayerId.PLAYER1, 10, 30))
-        self.__shield_bars.add(ShieldBar(PlayerId.PLAYER2, int(os.environ[SCREEN_WIDTH_ENV_VAR]) - 160, 30))
+        self.__shield_bars.add(
+            ShieldBar(
+                PlayerId.PLAYER2,
+                int(os.environ[SCREEN_WIDTH_ENV_VAR]) - 160,
+                30,
+            ),
+        )
         self.__powerups.add(Powerup())
         self.context = context
 
     def exit(self) -> GameContext:
-        """Placeholder for cleanup actions when exiting the gameplay state.
+        """Perform cleanup actions when exiting the gameplay state.
 
         Currently does nothing.
         """
@@ -75,11 +86,10 @@ class Gameplay(State):
         self.__heath_bars.empty()
         self.__shield_bars.empty()
         self.__powerups.empty()
-
         return self.context
 
     def handle_input(self, event: Event) -> None:
-        """Handles player input events, delegating to the player's render group for processing.
+        """Handle player input events, delegating to the player's render group for processing.
 
         Args:
             event: The input event to handle.
@@ -90,7 +100,7 @@ class Gameplay(State):
             self.__players.handle_input(event.key, False)
 
     def process_events(self, event: Event) -> None:
-        """Placeholder for processing other game events.
+        """Process other game events.
 
         Args:
             event: The game event to process.
@@ -105,12 +115,11 @@ class Gameplay(State):
         self.__powerups.process_events(event)
 
     def update(self, delta_time: float) -> None:
-        """Updates the game logic for the gameplay state.
+        """Update the game logic for the gameplay state.
 
         Args:
             delta_time: The time elapsed since the last frame.
         """
-
         self.__players.update(delta_time)
         self.__projectiles.update(delta_time)
         self.__explosions.update(delta_time)
@@ -121,12 +130,11 @@ class Gameplay(State):
         self.__detect_collisions()
 
     def render(self, surface_dst: Surface) -> None:
-        """Renders the game entities to the given surface.
+        """Render the game entities to the given surface.
 
         Args:
             surface_dst: The surface to render the game entities to.
         """
-
         self.__players.render(surface_dst)
         self.__projectiles.render(surface_dst)
         self.__explosions.render(surface_dst)
@@ -136,7 +144,7 @@ class Gameplay(State):
         self.__powerups.render(surface_dst)
 
     def release(self) -> None:
-        """Releases resources associated with the gameplay state.
+        """Release resources associated with the gameplay state.
 
         Args:
             surface_dst: The surface to release resources from.
@@ -150,12 +158,11 @@ class Gameplay(State):
         self.__powerups.release()
 
     def __handle_events(self, event: Event) -> None:
-        """Handles game events for the gameplay state.
+        """Handle game events for the gameplay state.
 
         Args:
             event: The game event to handle.
         """
-
         if event.event == Events.PLAYER1_FIRES:
             self.__spawn_projectile(PlayerId.PLAYER1, event.pos, event.vel)
         if event.event == Events.PLAYER2_FIRES:
@@ -171,25 +178,28 @@ class Gameplay(State):
         if event.event == Events.PLAYER_DIED:
             self.__kill_player(event.player)
             self.__game_over()
-
         if event.event == Events.GAMEOVER:
             self.done = True
             logger.info("Game over!")
 
-    def __spawn_projectile(self, player: PlayerId, position: Vector2, velocity: Vector2) -> None:
-        """Spawns a projectile of the given type at the specified position.
+    def __spawn_projectile(
+        self,
+        player: PlayerId,
+        position: Vector2,
+        velocity: Vector2,
+    ) -> None:
+        """Spawn a projectile of the given type at the specified position.
 
         Args:
-            projectile_type: The type of projectile to spawn.
+            player: The player who fired the projectile.
             position: The position to spawn the projectile at.
             velocity: The velocity of the projectile.
         """
-
         projectile = ProjectileFactory.create_projectile(player, position, velocity)
         self.__projectiles.add(projectile)
 
     def __spawn_thrust(self, position: Vector2, direction: Vector2) -> None:
-        """Spawns a thrust at the given position.
+        """Spawn a thrust at the given position.
 
         Args:
             position: The position to spawn the thrust at.
@@ -198,12 +208,11 @@ class Gameplay(State):
         self.__thrusts.add(Thrust(position, direction))
 
     def __kill_projectile(self, projectile: Projectile) -> None:
-        """Removes the given projectile from the game.
+        """Remove the given projectile from the game.
 
         Args:
             projectile: The projectile to remove.
         """
-
         if projectile in self.__projectiles:
             self.__projectiles.remove(projectile)
             del projectile
@@ -211,12 +220,11 @@ class Gameplay(State):
             logger.error("Trying to remove a projectile that is not in the game.")
 
     def __kill_thrust(self, thrust: Thrust) -> None:
-        """Removes the given thrust from the game.
+        """Remove the given thrust from the game.
 
         Args:
             thrust: The thrust to remove.
         """
-
         if thrust in self.__thrusts:
             self.__thrusts.remove(thrust)
             del thrust
@@ -224,12 +232,11 @@ class Gameplay(State):
             logger.error("Trying to remove a thrust that is not in the game.")
 
     def __kill_explosion(self, explosion: Explosion) -> None:
-        """Removes the given explosion from the game.
+        """Remove the given explosion from the game.
 
         Args:
             explosion: The explosion to remove.
         """
-
         if explosion in self.__explosions:
             self.__explosions.remove(explosion)
             del explosion
@@ -237,21 +244,23 @@ class Gameplay(State):
             logger.error("Trying to remove an explosion that is not in the game.")
 
     def __kill_player(self, player: Player) -> None:
-        """Removes the given player from the game.
+        """Remove the given player from the game.
 
         Args:
             player: The player to remove.
         """
-
         if player in self.__players:
-            logger.info(f"Player {player} died.")
+            logger.info("Player %s died.", player)
             self.__players.remove(player)
             del player
         else:
-            logger.error(f"Trying to remove a player {player} that is not in the game.")
+            logger.error(
+                "Trying to remove a player %s that is not in the game.",
+                player,
+            )
 
     def __detect_collisions(self) -> None:
-        """Detects collisions between the players and the projectiles.
+        """Detect collisions between the players and the projectiles.
 
         For efficiency reasons, we only check for mask collisions if the collision is first
         detected by the rectangle.
@@ -261,12 +270,11 @@ class Gameplay(State):
         self.__detect_player_vs_powerup()
 
     def __detect_player_vs_player(self) -> None:
-        """Detects collisions between the players and the projectiles.
+        """Detect collisions between the players and the projectiles.
 
         For efficiency reasons, we only check for mask collisions if the collision is first
         detected by the rectangle.
         """
-
         for i, player1 in enumerate(self.__players):
             for player2 in self.__players.sprites()[i + 1 :]:
                 if (
@@ -282,7 +290,7 @@ class Gameplay(State):
                     logger.info("Player hit by player (mask)!")
 
     def __detect_player_vs_projectile(self) -> None:
-        """Detects collisions between the players and the projectiles.
+        """Detect collisions between the players and the projectiles.
 
         For efficiency reasons, we only check for mask collisions if the collision is first
         detected by the rectangle.
@@ -290,24 +298,48 @@ class Gameplay(State):
         The projectile is removed from the game if it hits a player; then, it is still necessary to
         check if the player is still in the game (results group).
         """
-        for player in groupcollide(self.__players, self.__projectiles, False, False, collide_rect):
+        for player in groupcollide(
+            self.__players,
+            self.__projectiles,
+            False,
+            False,
+            collide_rect,
+        ):
             if player.is_shielded and player.state.shield > 0:
                 continue
-            if results := groupcollide(self.__players, self.__projectiles, False, True, collide_mask):
-                if player in results:
-                    self.__spawn_explosion(results[player][0].pos)
-                    damage = results[player][0].damage
-                    hit_event = Event(USEREVENT, event=Events.PLAYER_HIT, player=player, damage=damage)
-                    pygame.event.post(hit_event)
-                    logger.info("Player hit by projectile (mask)!")
+            if (
+                results := groupcollide(
+                    self.__players,
+                    self.__projectiles,
+                    False,
+                    True,
+                    collide_mask,
+                )
+            ) and player in results:
+                self.__spawn_explosion(results[player][0].pos)
+                damage = results[player][0].damage
+                hit_event = Event(
+                    USEREVENT,
+                    event=Events.PLAYER_HIT,
+                    player=player,
+                    damage=damage,
+                )
+                pygame.event.post(hit_event)
+                logger.info("Player hit by projectile (mask)!")
 
     def __detect_player_vs_powerup(self) -> None:
-        """Detects collisions between the players and the powerups.
+        """Detect collisions between the players and the power-ups.
 
         For efficiency reasons, we only check for mask collisions if the collision is first
         detected by the rectangle.
         """
-        for player in groupcollide(self.__players, self.__powerups, False, False, collide_rect):
+        for player in groupcollide(
+            self.__players,
+            self.__powerups,
+            False,
+            False,
+            collide_rect,
+        ):
             powerup_value = self.__powerups.sprites()[0].value
             if groupcollide(self.__players, self.__powerups, False, True, collide_mask):
                 powerup_event = Event(
@@ -318,7 +350,7 @@ class Gameplay(State):
                 )
                 pygame.event.post(powerup_event)
                 self.__powerups.add(Powerup())
-                logger.info(f"Player {player} picked up powerup!")
+                logger.info("Player %s picked up powerup!", player)
 
     def __spawn_explosion(self, position: Vector2) -> None:
         """Spawns an explosion at the given position.
@@ -326,14 +358,14 @@ class Gameplay(State):
         Args:
             position: The position to spawn the explosion at.
         """
-        logger.info(f"Explosion at {position}")
+        logger.info("Explosion at %s", position)
         self.__explosions.add(Explosion(position))
 
     def __game_over(self, trigger_delay: int = 3000) -> None:
         """Post gameover event with some delay after the kill."""
         logger.info("Game over event triggered.")
         winner = self.__players.sprites()[0].player_id.name if len(self.__players) == 1 else None
-        logger.info(f"Winner: {winner}")
+        logger.info("Winner: %s", winner)
         self.context.set_data(winner=winner)
         gameover_event = Event(USEREVENT, event=Events.GAMEOVER, color=(0, 0, 0))
         pygame.time.set_timer(gameover_event, trigger_delay, 1)
