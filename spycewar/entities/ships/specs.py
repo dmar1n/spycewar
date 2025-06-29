@@ -15,7 +15,7 @@ from spycewar.events import Events
 
 @dataclass
 class ShipSpecs:
-    """Represents the specifications of a ship.
+    """Represent the specifications of a ship.
 
     Attributes:
         player: the player id of the ship.
@@ -41,24 +41,32 @@ class ShipSpecs:
 
     @classmethod
     def load_ship_specs(cls, player: PlayerId) -> ShipSpecs:
-        """Loads the ship specifications from the configuration file.
+        """Load the ship specifications from the configuration file.
 
         Args:
-            ship_name: the name of the ship to load the specifications for.
+            player: The player id for which to load the ship specifications.
         """
         file_dir, filename = get_cfg("entities", "ships", player.value, "file")
         file_path = resources.files(file_dir).joinpath(filename)
         image = load_image(file_path)
-
         fire_event = Events(get_cfg("entities", "players", player.value, "fire_event"))
         max_speed = get_cfg("entities", "ships", player.value, "max_speed")
         max_shield = get_cfg("entities", "ships", player.value, "max_shield")
         acceleration = get_cfg("entities", "ships", player.value, "acceleration")
         rotation_speed = get_cfg("entities", "ships", player.value, "rotation_speed")
         projectile_speed = get_cfg("entities", "projectiles", player.value, "speed")
-        projectile_cooldown = get_cfg("entities", "projectiles", player.value, "cooldown")
-        hyperspace_cooldown = get_cfg("entities", "ships", player.value, "hyperspace_cooldown")
-
+        projectile_cooldown = get_cfg(
+            "entities",
+            "projectiles",
+            player.value,
+            "cooldown",
+        )
+        hyperspace_cooldown = get_cfg(
+            "entities",
+            "ships",
+            player.value,
+            "hyperspace_cooldown",
+        )
         return cls(
             player,
             fire_event,

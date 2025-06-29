@@ -4,10 +4,13 @@ It extends the Pygame sprite group class to add game-specific functionality.
 """
 
 import pygame
-from loguru import logger
 from pygame import Surface
 from pygame.event import Event
 from pygame.sprite import Group
+
+from spycewar.logger import get_logger
+
+logger = get_logger()
 
 
 class RenderGroup(Group):
@@ -26,13 +29,12 @@ class RenderGroup(Group):
     """
 
     def __init__(self) -> None:
-        """Initializes the RenderGroup."""
-
+        """Initialise the RenderGroup."""
         super().__init__()
         logger.info("RenderGroup initialized.")
 
     def handle_input(self, key: pygame.key, is_pressed: bool) -> None:
-        """Passes input events to all sprites in the group.
+        """Pass input events to all sprites in the group.
 
         Iterates through all sprites, calling their handle_input method.
 
@@ -44,7 +46,7 @@ class RenderGroup(Group):
             sprite.handle_input(key, is_pressed)
 
     def process_events(self, event: Event) -> None:
-        """Passes Pygame events to all sprites in the group.
+        """Pass Pygame events to all sprites in the group.
 
         Iterates through all sprites, calling their process_events method.
 
@@ -55,7 +57,7 @@ class RenderGroup(Group):
             sprite.process_events(event)
 
     def render(self, surface_dst: Surface) -> None:
-        """Renders all sprites in the group to the given surface.
+        """Render all sprites in the group to the given surface.
 
         Iterates through all sprites, calling their render method.
 
@@ -66,7 +68,7 @@ class RenderGroup(Group):
             sprite.render(surface_dst)
 
     def release(self) -> None:
-        """Calls the release method of all sprites in the group.
+        """Call the release method of all sprites in the group.
 
         Used for cleaning up resources.
         """

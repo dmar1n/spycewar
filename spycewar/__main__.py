@@ -6,14 +6,13 @@ from spycewar.app import App
 
 
 def main(args: list[str] | None = None) -> int:
-    """Main entry point for the application.
+    """Run the main entry point for the application.
 
     Args:
-        args: arguments from the CLI. Defaults to None.
+        args: Arguments from the CLI. Defaults to None.
     """
     if args is None:
         args = sys.argv[1:]
-
     app = App()
     app.run()
     return 0

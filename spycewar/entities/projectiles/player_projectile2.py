@@ -1,24 +1,18 @@
 """Module for the projectile class."""
 
-from importlib import resources
-
-from loguru import logger
 from pygame import Surface, Vector2
 
-from spycewar.assets.images.utils import load_image
 from spycewar.config import get_cfg
 from spycewar.entities.players.enums import PlayerId
 from spycewar.entities.projectiles.projectile import Projectile
+from spycewar.entities.projectiles.projectile_utils import load_player_projectile_image
+from spycewar.logger import get_logger
+
+logger = get_logger()
 
 
 class PlayerProjectile2(Projectile):
-    """Represents a projectile fired by the player 1's ship.
-
-    The velocity must be given by the player's ship, who knows the direction of the projectile.
-
-    The image is centred at the given position, so the position must be the center of the
-    projectile.
-    """
+    """Represents a projectile fired by the player 2's ship."""
 
     __image: Surface | None = None
     __mid_width: int = 0
@@ -27,40 +21,26 @@ class PlayerProjectile2(Projectile):
     __base_damage = get_cfg("entities", "projectiles", __player.value, "base_damage")
 
     def __init__(self, position: Vector2, velocity: Vector2) -> None:
-
+        """Initialise the projectile."""
         if PlayerProjectile2.__image is None:
-            PlayerProjectile2.__image = self.__load_projectile()
-            PlayerProjectile2.__mid_width = PlayerProjectile2.__image.get_width() / 2
-            PlayerProjectile2.__mid_height = PlayerProjectile2.__image.get_height() / 2
-            logger.info(f"PlayerProjectile2 image loaded: {PlayerProjectile2.__image}")
-
+            img, mid_w, mid_h = load_player_projectile_image(self.__player)
+            PlayerProjectile2.__image = img
+            PlayerProjectile2.__mid_width = mid_w
+            PlayerProjectile2.__mid_height = mid_h
+            logger.info("PlayerProjectile2 image loaded: %s", PlayerProjectile2.__image)
         position = (position.x - self.__mid_width, position.y - self.__mid_height)
         super().__init__(position, velocity)
 
     @property
     def image(self) -> Surface | None:
         """Image of the projectile."""
-
         return PlayerProjectile2.__image
 
     @property
     def damage(self) -> int:
         """Damage of the projectile."""
-
         return self.__base_damage
 
-    def __load_projectile(self) -> Surface:
-        """Loads the player image from the given file path and converts it to alpha.
-
-        Returns:
-            The player image as a pygame Surface.
-        """
-
-        file_dir, filename = get_cfg("entities", "projectiles", self.__player.value, "file")
-        file_path = resources.files(file_dir).joinpath(filename)
-        return load_image(file_path)
-
     def render(self, surface_dst: Surface) -> None:
-        """Renders the projectile to the given surface at the projectile's position."""
-
+        """Render the projectile on the given surface."""
         surface_dst.blit(self.image, self._position)

@@ -5,7 +5,20 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from pygame.event import Event
-from pygame.locals import K_a, K_d, K_e, K_i, K_j, K_k, K_l, K_o, K_q, K_s, K_u, K_w
+from pygame.locals import (
+    K_a,
+    K_d,
+    K_e,
+    K_i,
+    K_j,
+    K_k,
+    K_l,
+    K_o,
+    K_q,
+    K_s,
+    K_u,
+    K_w,
+)
 
 from spycewar.config import get_cfg
 from spycewar.entities.players.enums import PlayerId
@@ -46,12 +59,11 @@ class PlayerControls:
 
     @classmethod
     def load_controls(cls, player: PlayerId) -> PlayerControls:
-        """Loads the controls from the configuration file.
+        """Load the controls from the configuration file.
 
         Args:
             player: the player id to load the controls for.
         """
-
         controls = get_cfg("entities", "players", player.value, "controls")
         return cls(
             KEY_MAPPING[controls["fire"]],

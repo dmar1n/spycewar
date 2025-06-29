@@ -32,7 +32,6 @@ class GameObject(Sprite, ABC):
 
     def __init__(self) -> None:
         """Abstract, Constructs the game object class."""
-
         super().__init__()
         self._position = Vector2(0.0, 0.0)
         self.rect = Rect(0, 0, 0, 0)
@@ -59,7 +58,7 @@ class GameObject(Sprite, ABC):
 
     @abstractmethod
     def update(self, delta_time: float) -> None:
-        """Updates the game object for a period of time.
+        """Update the game object for a period of time.
 
         Args:
             delta_time: _description_
@@ -67,20 +66,19 @@ class GameObject(Sprite, ABC):
 
     @abstractmethod
     def render(self, surface_dst: Surface) -> None:
-        """Renders the game object to the screen."""
+        """Render the game object to the screen."""
 
     @abstractmethod
     def release(self) -> None:
-        """Releases game object resources."""
+        """Release game object resources."""
 
     @property
     def pos(self) -> Vector2:
         """Property to get the position of the game object."""
-
         return self._position
 
     def _in_bounds(self, distance: Vector2) -> bool:
-        """Checks if the game object is inside the screen.
+        """Check if the game object is inside the screen.
 
         Args:
             distance: the distance to check if the game object is inside the screen.
@@ -90,11 +88,10 @@ class GameObject(Sprite, ABC):
         """
         new_pos = self._position + distance
         width, height = get_cfg("game", "screen_size")
-
-        return new_pos.x >= 0 and new_pos.x <= width and new_pos.y >= 0 and new_pos.y <= height
+        return new_pos.x >= 0 and new_pos.x <= width and (new_pos.y >= 0) and (new_pos.y <= height)
 
     def _is_alive(self) -> bool:
-        """Checks if the game object is alive.
+        """Check if the game object is alive.
 
         Returns:
             `True` if the game object is alive, `False` otherwise.d

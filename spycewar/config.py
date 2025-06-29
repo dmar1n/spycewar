@@ -9,12 +9,14 @@ from importlib import resources
 from pathlib import Path
 from typing import Any
 
-from loguru import logger
+from spycewar.logger import get_logger
+
+logger = get_logger()
 
 
 @lru_cache
 def get_cfg(*args: str) -> Any:
-    """Helper method to get a configuration value using a path of keys.
+    """Get a configuration value using a path of keys.
 
     Example:
         cfg("fps") -> 60
@@ -29,12 +31,12 @@ def get_cfg(*args: str) -> Any:
             data = data[arg]
         return data
     except KeyError as e:
-        logger.error(f"Configuration key not found: {e} (from path: {args})")
+        logger.error("Configuration key not found: %s (from path: %s)", e, args)
         raise
 
 
 def set_cfg(*args: str, value: Any) -> None:
-    """Helper method to set a configuration value using a path of keys.
+    """Set a configuration value using a path of keys.
 
     Example:
         cfg("fps", value=30)
@@ -51,7 +53,7 @@ def set_cfg(*args: str, value: Any) -> None:
             data = data[arg]
         data[args[-1]] = value
     except KeyError as e:
-        logger.error(f"Configuration key not found: {e} (from path: {args})")
+        logger.error("Configuration key not found: %s (from path: %s)", e, args)
         raise
 
 
@@ -81,7 +83,7 @@ class Config:
             Load the configuration
     """
 
-    __instance = None  # private class variable (not instance variable)
+    __instance = None
     __internal_path = "config"
     __filename = "config.json"
     __settings: dict = {}
@@ -89,61 +91,54 @@ class Config:
     @classmethod
     def get_instance(cls) -> Config:
         """Get the singleton instance."""
-
         return cls.__instance if cls.__instance is not None else cls()
 
     def __init__(self) -> None:
         """Create the singleton instance."""
-
         if Config.__instance is not None:
-            raise RuntimeError("A singleton does not allow multiple instances. Use get_instance() instead.")
-
+            raise RuntimeError(
+                "A singleton does not allow multiple instances. Use get_instance() instead.",
+            )
         Config.__instance = self
         self.__load_config()
 
     @property
     def data(self) -> dict:
         """Get the configuration settings."""
-
         return self.__settings
 
     @data.setter
     def data(self, values: dict) -> None:
         """Set the configuration settings."""
-
         self.__settings = values
 
     def reload(self) -> None:
         """Reload the configuration from the file."""
-
         self.__load_config()
 
     def __get_internal_path(self) -> Path:
         """Get the internal path of the configuration file."""
-
-        return Path(str(resources.files(Config.__internal_path).joinpath(Config.__filename)))
+        return Path(
+            str(resources.files(Config.__internal_path).joinpath(Config.__filename)),
+        )
 
     def __load_config(self) -> None:
         """Reload the configuration from the file."""
-
         file_path = self.__get_internal_path()
         self.__load_config_from_json(file_path)
 
     def __load_config_from_json(self, file_path: Path) -> None:
         """Load the configuration from a file."""
-
-        logger.info(f"Loading configuration from: {file_path}")
-
+        logger.info("Loading configuration from: %s", file_path)
         with open(Path(file_path), encoding="utf_8") as file:
             self.__settings = json.load(file)
 
 
 def main() -> int:
-    """Main entry point for the script."""
-
+    """Run the main entry point for the script."""
     config = Config.get_instance()
     print(config.data)
-    config.data = {"key": "value"}  # overwrite the configuration
+    config.data = {"key": "value"}
     print(config.data)
     config.reload()
     print(config.data)
