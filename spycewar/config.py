@@ -130,8 +130,15 @@ class Config:
     def __load_config_from_json(self, file_path: Path) -> None:
         """Load the configuration from a file."""
         logger.info("Loading configuration from: %s", file_path)
-        with open(Path(file_path), encoding="utf_8") as file:
-            self.__settings = json.load(file)
+        try:
+            with open(Path(file_path), encoding="utf_8") as file:
+                self.__settings = json.load(file)
+        except FileNotFoundError:
+            logger.error("Configuration file not found: %s", file_path)
+            self.__settings = {}
+        except json.JSONDecodeError as e:
+            logger.error("Invalid JSON in configuration file %s: %s", file_path, e)
+            self.__settings = {}
 
 
 def main() -> int:
