@@ -11,6 +11,7 @@ from pygame.locals import USEREVENT
 
 from spycewar.assets.images.utils import load_image
 from spycewar.config import get_cfg
+from spycewar.constants import SCREEN_HEIGHT_ENV_VAR, SCREEN_WIDTH_ENV_VAR
 from spycewar.entities.game_object import GameObject
 from spycewar.events import Events
 from spycewar.logger import get_logger
@@ -76,8 +77,8 @@ class Powerup(GameObject):
             return
         logger.info("Spawning health power-up...")
         screen_width, screen_height = (
-            os.getenv("SCREEN_WIDTH") or 800,
-            os.getenv("SCREEN_HEIGHT") or 600,
+            os.getenv(SCREEN_WIDTH_ENV_VAR) or get_cfg("game", "screen_size")[0],
+            os.getenv(SCREEN_HEIGHT_ENV_VAR) or get_cfg("game", "screen_size")[1],
         )
         position = Vector2(
             random.randint(50, int(screen_width) - 50),

@@ -130,8 +130,10 @@ class Player(GameObject):
         """Process events for other parts of the app."""
         if self.can_be_damaged and (event.event == Events.PLAYER_HIT and event.player == self):
             self.state.take_damage(event.damage)
-        if event.event == Events.HEALTH_POWERUP_PICKUP:
+        if event.event == Events.HEALTH_POWERUP_PICKUP and event.player == self:
             self.state.heal(event.value)
+            logger.debug("%s picked up health powerup: +%d health.", self, event.value)
+            logger.debug("%s health is now %d.", self, self.state.health)
         if event.event == Events.SHIELD_ACTIVATED and event.player == self:
             self.__ship_state.is_shield_enabled = True
 

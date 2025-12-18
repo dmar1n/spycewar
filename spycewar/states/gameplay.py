@@ -333,24 +333,24 @@ class Gameplay(State):
         For efficiency reasons, we only check for mask collisions if the collision is first
         detected by the rectangle.
         """
-        for player in groupcollide(
+        results = groupcollide(
             self.__players,
             self.__powerups,
             False,
-            False,
-            collide_rect,
-        ):
-            powerup_value = self.__powerups.sprites()[0].value
-            if groupcollide(self.__players, self.__powerups, False, True, collide_mask):
-                powerup_event = Event(
-                    USEREVENT,
-                    event=Events.HEALTH_POWERUP_PICKUP,
-                    player=player,
-                    value=powerup_value,
-                )
-                pygame.event.post(powerup_event)
-                self.__powerups.add(Powerup())
-                logger.info("Player %s picked up powerup!", player)
+            True,
+            collide_mask,
+        )
+        for player, powerups in results.items():
+            powerup_value = powerups[0].value
+            powerup_event = Event(
+                USEREVENT,
+                event=Events.HEALTH_POWERUP_PICKUP,
+                player=player,
+                value=powerup_value,
+            )
+            pygame.event.post(powerup_event)
+            self.__powerups.add(Powerup())
+            logger.info("Player %s picked up powerup!", player)
 
     def __spawn_explosion(self, position: Vector2) -> None:
         """Spawns an explosion at the given position.

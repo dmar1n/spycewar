@@ -51,5 +51,8 @@ class Explosion(GameObject):
             num_particles: the number of particles to generate.
         """
         for _ in range(num_particles):
-            direction = Vector2(uniform(-1, 1), uniform(-1, 1)).normalize()
+            direction = Vector2(uniform(-1, 1), uniform(-1, 1))
+            while direction.length_squared() == 0:
+                direction = Vector2(uniform(-1, 1), uniform(-1, 1))
+            direction = direction.normalize()
             Particle(self.particle_group, position, direction, radius=2)

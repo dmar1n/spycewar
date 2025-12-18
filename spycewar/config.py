@@ -114,6 +114,7 @@ class Config:
 
     def reload(self) -> None:
         """Reload the configuration from the file."""
+        get_cfg.cache_clear()
         self.__load_config()
 
     def __get_internal_path(self) -> Path:
