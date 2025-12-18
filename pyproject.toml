@@ -4,8 +4,16 @@ version = "1.1.0"
 description = "A game inspired by Spacewar!"
 authors = [{ name = "Daniel Marín" }]
 readme = "README.md"
-requires-python = ">=3.8"
-dependencies = ["pygame", "pre-commit", "rich>=14.0.0"]
+requires-python = ">=3.12"
+dependencies = [
+    "pygame>=2.6.1",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.5.1",
+    "rich>=14.2.0",
+]
 
 [tool.setuptools.packages.find]
 include = ["spycewar", "config"]
