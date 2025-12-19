@@ -51,7 +51,7 @@ class Player(GameObject):
         self.__rotated_image = self.image
         self.__last_angle = self.__ship_state.angle
         self.__debug_font = None
-        logger.info("%s created with specs: %s", player, self.__specs)
+        logger.debug("%s created with specs: %s", player, self.__specs)
         self.__update_mask()
         self.__update_rect()
 
@@ -131,7 +131,15 @@ class Player(GameObject):
     def process_events(self, event: Event) -> None:
         """Process events for other parts of the app."""
         if self.can_be_damaged and (event.event == Events.PLAYER_HIT and event.player == self):
+            previous_health = self.state.health
             self.state.take_damage(event.damage)
+            logger.debug(
+                "%s took %d damage (health %d -> %d).",
+                self,
+                event.damage,
+                previous_health,
+                self.state.health,
+            )
         if event.event == Events.HEALTH_POWERUP_PICKUP and event.player == self:
             self.state.heal(event.value)
             logger.debug("%s picked up health powerup: +%d health.", self, event.value)
@@ -292,12 +300,14 @@ class Player(GameObject):
 
     def __hyperspace(self) -> None:
         """Hyperspace the player to a random position on the screen."""
+        old_position = self._position.copy()
         self.hyperspace_cooldown = self.__specs.hyperspace_cooldown
         self.__ship_state.velocity = Vector2(0, 0)
         self._position = Vector2(
             randint(20, get_cfg("game", "screen_size")[0] - 20),
             randint(20, get_cfg("game", "screen_size")[1] - 20),
         )
+        logger.debug("%s hyperspace from %s to %s.", self, old_position, self._position)
 
     def __fire(self) -> None:
         """Fire a projectile from the player's position.
@@ -308,6 +318,12 @@ class Player(GameObject):
         self.cooldown = self.__specs.projectile_cooldown
         projectile_velocity, fire_position = self.__compute_trajectory(
             speed=self.__specs.projectile_speed,
+        )
+        logger.debug(
+            "%s fired projectile from %s with velocity %s.",
+            self,
+            fire_position,
+            projectile_velocity,
         )
         fire_event = Event(
             USEREVENT,

@@ -18,7 +18,7 @@
     "handlers": {
         "stdout": {
             "class": "rich.logging.RichHandler",
-            "level": "DEBUG",
+            "level": "INFO",
             "formatter": "rich",
             "rich_tracebacks": true
         },

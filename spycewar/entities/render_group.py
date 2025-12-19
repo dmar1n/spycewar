@@ -31,7 +31,7 @@ class RenderGroup(Group):
     def __init__(self) -> None:
         """Initialise the RenderGroup."""
         super().__init__()
-        logger.info("RenderGroup initialized.")
+        logger.debug("RenderGroup %s initialized", id(self))
 
     def handle_input(self, key: pygame.key, is_pressed: bool) -> None:
         """Pass input events to all sprites in the group.
