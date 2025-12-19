@@ -298,34 +298,38 @@ class Gameplay(State):
         The projectile is removed from the game if it hits a player; then, it is still necessary to
         check if the player is still in the game (results group).
         """
-        for player in groupcollide(
+        rect_hits = groupcollide(
             self.__players,
             self.__projectiles,
             False,
             False,
             collide_rect,
-        ):
+        )
+        for player, projectiles in rect_hits.items():
             if player.is_shielded and player.state.shield > 0:
                 continue
-            if (
-                results := groupcollide(
-                    self.__players,
-                    self.__projectiles,
-                    False,
-                    True,
-                    collide_mask,
-                )
-            ) and player in results:
-                self.__spawn_explosion(results[player][0].pos)
-                damage = results[player][0].damage
-                hit_event = Event(
-                    USEREVENT,
-                    event=Events.PLAYER_HIT,
-                    player=player,
-                    damage=damage,
-                )
-                pygame.event.post(hit_event)
-                logger.info("Player hit by projectile (mask)!")
+            hit_projectile = None
+            projectiles_to_remove = []
+            for projectile in projectiles:
+                if collide_mask(player, projectile):
+                    if hit_projectile is None:
+                        hit_projectile = projectile
+                    projectiles_to_remove.append(projectile)
+            if hit_projectile is None:
+                continue
+            for projectile in projectiles_to_remove:
+                if projectile in self.__projectiles:
+                    self.__projectiles.remove(projectile)
+            self.__spawn_explosion(hit_projectile.pos)
+            damage = hit_projectile.damage
+            hit_event = Event(
+                USEREVENT,
+                event=Events.PLAYER_HIT,
+                player=player,
+                damage=damage,
+            )
+            pygame.event.post(hit_event)
+            logger.info("Player hit by projectile (mask)!")
 
     def __detect_player_vs_powerup(self) -> None:
         """Detect collisions between the players and the power-ups.

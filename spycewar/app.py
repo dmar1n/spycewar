@@ -52,7 +52,7 @@ class App:
         self.__clock = Clock()
         self.__state_manager = StateManager()
         self.__running = False
-        self.__starfield = self.__generate_starfield()
+        self.__starfield_surface = self.__generate_starfield()
 
     def run(self) -> None:
         """Run the game loop."""
@@ -101,7 +101,7 @@ class App:
             set_cfg("game", "screen_size", value=screen_size)
             os.environ[SCREEN_WIDTH_ENV_VAR] = str(screen_size[0])
             os.environ[SCREEN_HEIGHT_ENV_VAR] = str(screen_size[1])
-            self.__starfield = self.__generate_starfield()
+            self.__starfield_surface = self.__generate_starfield()
             self.__draw_starfield()
 
     def __handle_background_color(self, event: Event) -> None:
@@ -148,9 +148,7 @@ class App:
 
     def __draw_starfield(self) -> None:
         """Draw the starfield background for the game."""
-        for star in self.__starfield:
-            x, y, color = star
-            pygame.draw.circle(self.__screen, (color, color, color), (x, y), 1)
+        self.__screen.blit(self.__starfield_surface, (0, 0))
 
     def __release(self) -> None:
         """Clean up resources.
@@ -161,12 +159,13 @@ class App:
         pygame.quit()
         logger.info("Game stopped.")
 
-    def __generate_starfield(self) -> list[tuple[int, int, int]]:
-        """Generate a starfield background for the game."""
-        stars = []
+    def __generate_starfield(self) -> pygame.Surface:
+        """Generate a starfield background surface for the game."""
+        starfield_surface = pygame.Surface(self.__screen.get_size(), pygame.SRCALPHA)
         num_stars = 50
         for _ in range(num_stars):
             x = randint(0, self.__screen.get_width())
             y = randint(0, self.__screen.get_height())
-            stars.append((x, y, randint(50, 255)))
-        return stars
+            color = randint(50, 255)
+            pygame.draw.circle(starfield_surface, (color, color, color), (x, y), 1)
+        return starfield_surface
