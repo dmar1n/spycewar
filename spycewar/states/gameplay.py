@@ -10,6 +10,11 @@ from pygame.sprite import collide_mask, collide_rect, groupcollide
 
 from spycewar.constants import SCREEN_WIDTH_ENV_VAR
 from spycewar.entities.explosion import Explosion
+from spycewar.entities.players.ai_controller import (
+    PlayerController,
+    ai_is_enabled,
+    build_ai_controller,
+)
 from spycewar.entities.players.enums import PlayerId
 from spycewar.entities.players.health_bar import HealthBar
 from spycewar.entities.players.player import Player
@@ -50,6 +55,8 @@ class Gameplay(State):
         self.__shield_bars = RenderGroup()
         self.__hyperspace_bars = RenderGroup()
         self.__powerups = RenderGroup()
+        self.__ai_controllers: dict[PlayerId, PlayerController] = {}
+        self.__player_by_id: dict[PlayerId, Player] = {}
 
     def enter(self, context: GameContext) -> None:
         """Reset the state to indicate the game is not done when entering the gameplay state."""
@@ -59,6 +66,11 @@ class Gameplay(State):
         player2 = Player(PlayerId.PLAYER2)
         self.__players.add(player1)
         self.__players.add(player2)
+        self.__player_by_id = {
+            PlayerId.PLAYER1: player1,
+            PlayerId.PLAYER2: player2,
+        }
+        self.__setup_ai_controllers()
         self.__heath_bars.add(HealthBar(PlayerId.PLAYER1, 10, 10))
         self.__heath_bars.add(
             HealthBar(
@@ -99,6 +111,8 @@ class Gameplay(State):
         self.__shield_bars.empty()
         self.__hyperspace_bars.empty()
         self.__powerups.empty()
+        self.__ai_controllers.clear()
+        self.__player_by_id.clear()
         return self.context
 
     def handle_input(self, event: Event) -> None:
@@ -107,10 +121,12 @@ class Gameplay(State):
         Args:
             event: The input event to handle.
         """
-        if event.type == KEYDOWN:
-            self.__players.handle_input(event.key, True)
-        elif event.type == KEYUP:
-            self.__players.handle_input(event.key, False)
+        if event.type in (KEYDOWN, KEYUP):
+            is_pressed = event.type == KEYDOWN
+            for player in self.__players:
+                if player.player_id in self.__ai_controllers:
+                    continue
+                player.handle_input(event.key, is_pressed)
 
     def process_events(self, event: Event) -> None:
         """Process other game events.
@@ -133,6 +149,7 @@ class Gameplay(State):
         Args:
             delta_time: The time elapsed since the last frame.
         """
+        self.__update_ai_controllers(delta_time)
         self.__players.update(delta_time)
         self.__projectiles.update(delta_time)
         self.__explosions.update(delta_time)
@@ -172,6 +189,27 @@ class Gameplay(State):
         self.__shield_bars.release()
         self.__hyperspace_bars.release()
         self.__powerups.release()
+
+    def __setup_ai_controllers(self) -> None:
+        """Initialise AI controllers for players configured to use them."""
+        self.__ai_controllers = {}
+        for player_id in (PlayerId.PLAYER1, PlayerId.PLAYER2):
+            if ai_is_enabled(player_id):
+                self.__ai_controllers[player_id] = build_ai_controller(player_id)
+
+    def __update_ai_controllers(self, delta_time: float) -> None:
+        """Update AI controllers and apply their control states."""
+        if not self.__ai_controllers:
+            return
+        player1 = self.__player_by_id.get(PlayerId.PLAYER1)
+        player2 = self.__player_by_id.get(PlayerId.PLAYER2)
+        if player1 is None or player2 is None:
+            return
+        for player_id, controller in self.__ai_controllers.items():
+            player = player1 if player_id == PlayerId.PLAYER1 else player2
+            opponent = player2 if player_id == PlayerId.PLAYER1 else player1
+            control_state = controller.decide(player, opponent, delta_time)
+            player.apply_controls(control_state)
 
     def __handle_events(self, event: Event) -> None:
         """Handle game events for the gameplay state.
