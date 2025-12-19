@@ -13,6 +13,7 @@ from pygame.math import Vector2
 from spycewar.assets.fonts.utils import initialise_font, render_text
 from spycewar.config import get_cfg
 from spycewar.entities.game_object import GameObject
+from spycewar.entities.players.control_state import ControlState
 from spycewar.entities.players.controls import PlayerControls
 from spycewar.entities.players.enums import PlayerId
 from spycewar.entities.players.state import PlayerState
@@ -79,6 +80,16 @@ class Player(GameObject):
         return self.__specs.max_speed
 
     @property
+    def angle(self) -> float:
+        """Return the current angle of the ship."""
+        return self.__ship_state.angle
+
+    @property
+    def velocity(self) -> Vector2:
+        """Return the current velocity of the ship."""
+        return self.__ship_state.velocity.copy()
+
+    @property
     def cooldown(self) -> float:
         """Return the cooldown time between shots."""
         return self.__cooldown
@@ -141,6 +152,17 @@ class Player(GameObject):
         ):
             self.__hyperspace()
         if key == self.__controls.fire and self.cooldown <= 0.0 and is_pressed:
+            self.__fire()
+
+    def apply_controls(self, control_state: ControlState) -> None:
+        """Apply a control state directly (used by AI controllers)."""
+        self.__ship_state.is_accelerating = control_state.thrust
+        self.__ship_state.is_turning_left = control_state.left
+        self.__ship_state.is_turning_right = control_state.right
+        self.__ship_state.is_shield_enabled = control_state.shield
+        if control_state.hyperspace and (self.hyperspace_cooldown <= 0.0):
+            self.__hyperspace()
+        if control_state.fire and self.cooldown <= 0.0:
             self.__fire()
 
     def process_events(self, event: Event) -> None:

@@ -27,6 +27,11 @@
                     "right": "d",
                     "hyperspace": "q",
                     "shield": "e"
+                },
+                "ai": {
+                    "enabled": true,
+                    "controller": "predictive",
+                    "aggression": 1.0
                 }
             },
             "player2": {
@@ -39,6 +44,11 @@
                     "right": "l",
                     "hyperspace": "u",
                     "shield": "o"
+                },
+                "ai": {
+                    "enabled": false,
+                    "controller": "predictive",
+                    "aggression": 0.8
                 }
             },
             "random_start_position": false
@@ -49,18 +59,18 @@
                     "spycewar.assets.images",
                     "generic_projectile.png"
                 ],
-                "base_damage": 30,
-                "speed": 0.4,
-                "cooldown": 70
+                "base_damage": 20,
+                "speed": 0.2,
+                "cooldown": 300
             },
             "player2": {
                 "file": [
                     "spycewar.assets.images",
                     "generic_projectile.png"
                 ],
-                "base_damage": 35,
-                "speed": 0.5,
-                "cooldown": 100
+                "base_damage": 25,
+                "speed": 0.18,
+                "cooldown": 350
             }
         },
         "ships": {
@@ -69,7 +79,7 @@
                     "spycewar.assets.images",
                     "player1.png"
                 ],
-                "max_speed": 0.5,
+                "max_speed": 0.08,
                 "acceleration": 0.004,
                 "rotation_speed": 1.8,
                 "hyperspace_cooldown": 3000,
@@ -81,7 +91,7 @@
                     "spycewar.assets.images",
                     "player2.png"
                 ],
-                "max_speed": 0.4,
+                "max_speed": 0.07,
                 "acceleration": 0.005,
                 "rotation_speed": 2.0,
                 "hyperspace_cooldown": 5000,

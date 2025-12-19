@@ -10,6 +10,11 @@ from pygame.sprite import collide_mask, collide_rect, groupcollide
 
 from spycewar.constants import SCREEN_WIDTH_ENV_VAR
 from spycewar.entities.explosion import Explosion
+from spycewar.entities.players.ai_controller import (
+    PlayerController,
+    ai_is_enabled,
+    build_ai_controller,
+)
 from spycewar.entities.players.enums import PlayerId
 from spycewar.entities.players.health_bar import HealthBar
 from spycewar.entities.players.player import Player
@@ -50,6 +55,8 @@ class Gameplay(State):
         self.__shield_bars = RenderGroup()
         self.__hyperspace_bars = RenderGroup()
         self.__powerups = RenderGroup()
+        self.__ai_controllers: dict[PlayerId, PlayerController] = {}
+        self.__player_by_id: dict[PlayerId, Player] = {}
 
     def enter(self, context: GameContext) -> None:
         """Reset the state to indicate the game is not done when entering the gameplay state."""
@@ -59,6 +66,11 @@ class Gameplay(State):
         player2 = Player(PlayerId.PLAYER2)
         self.__players.add(player1)
         self.__players.add(player2)
+        self.__player_by_id = {
+            PlayerId.PLAYER1: player1,
+            PlayerId.PLAYER2: player2,
+        }
+        self.__setup_ai_controllers()
         self.__heath_bars.add(HealthBar(PlayerId.PLAYER1, 10, 10))
         self.__heath_bars.add(
             HealthBar(
@@ -99,6 +111,8 @@ class Gameplay(State):
         self.__shield_bars.empty()
         self.__hyperspace_bars.empty()
         self.__powerups.empty()
+        self.__ai_controllers.clear()
+        self.__player_by_id.clear()
         return self.context
 
     def handle_input(self, event: Event) -> None:
@@ -107,10 +121,12 @@ class Gameplay(State):
         Args:
             event: The input event to handle.
         """
-        if event.type == KEYDOWN:
-            self.__players.handle_input(event.key, True)
-        elif event.type == KEYUP:
-            self.__players.handle_input(event.key, False)
+        if event.type in (KEYDOWN, KEYUP):
+            is_pressed = event.type == KEYDOWN
+            for player in self.__players:
+                if player.player_id in self.__ai_controllers:
+                    continue
+                player.handle_input(event.key, is_pressed)
 
     def process_events(self, event: Event) -> None:
         """Process other game events.
@@ -133,6 +149,7 @@ class Gameplay(State):
         Args:
             delta_time: The time elapsed since the last frame.
         """
+        self.__update_ai_controllers(delta_time)
         self.__players.update(delta_time)
         self.__projectiles.update(delta_time)
         self.__explosions.update(delta_time)
@@ -172,6 +189,44 @@ class Gameplay(State):
         self.__shield_bars.release()
         self.__hyperspace_bars.release()
         self.__powerups.release()
+
+    def __setup_ai_controllers(self) -> None:
+        """Initialise AI controllers for players configured to use them."""
+        self.__ai_controllers = {}
+        for player_id in (PlayerId.PLAYER1, PlayerId.PLAYER2):
+            if ai_is_enabled(player_id):
+                self.__ai_controllers[player_id] = build_ai_controller(player_id)
+
+    def __update_ai_controllers(self, delta_time: float) -> None:
+        """Update AI controllers and apply their control states."""
+        if not self.__ai_controllers:
+            return
+        player1 = self.__player_by_id.get(PlayerId.PLAYER1)
+        player2 = self.__player_by_id.get(PlayerId.PLAYER2)
+        if player1 is None or player2 is None:
+            return
+        for player_id, controller in self.__ai_controllers.items():
+            player = player1 if player_id == PlayerId.PLAYER1 else player2
+            opponent = player2 if player_id == PlayerId.PLAYER1 else player1
+            powerup_pos = self.__nearest_powerup_position(player)
+            control_state = controller.decide(player, opponent, delta_time, powerup_pos)
+            player.apply_controls(control_state)
+
+    def __nearest_powerup_position(self, player: Player) -> Vector2 | None:
+        """Return the nearest active powerup position to the player."""
+        if player.pos.length_squared() <= 0.0:
+            return None
+        nearest_pos = None
+        nearest_distance = None
+        for powerup in self.__powerups:
+            powerup_pos = powerup.pos
+            if powerup_pos is None:
+                continue
+            distance_sq = (powerup_pos - player.pos).length_squared()
+            if nearest_distance is None or distance_sq < nearest_distance:
+                nearest_distance = distance_sq
+                nearest_pos = powerup_pos
+        return nearest_pos
 
     def __handle_events(self, event: Event) -> None:
         """Handle game events for the gameplay state.
@@ -213,12 +268,6 @@ class Gameplay(State):
         """
         projectile = ProjectileFactory.create_projectile(player, position, velocity)
         self.__projectiles.add(projectile)
-        logger.debug(
-            "Spawned projectile for %s at %s with velocity %s.",
-            player,
-            position,
-            velocity,
-        )
 
     def __spawn_thrust(self, position: Vector2, direction: Vector2) -> None:
         """Spawn a thrust at the given position.
@@ -228,7 +277,6 @@ class Gameplay(State):
             direction: The direction of the thrust.
         """
         self.__thrusts.add(Thrust(position, direction))
-        logger.debug("Spawned thrust at %s with direction %s.", position, direction)
 
     def __kill_projectile(self, projectile: Projectile) -> None:
         """Remove the given projectile from the game.
@@ -239,7 +287,6 @@ class Gameplay(State):
         if projectile in self.__projectiles:
             self.__projectiles.remove(projectile)
             del projectile
-            logger.debug("Projectile removed from the game.")
         else:
             logger.error("Trying to remove a projectile that is not in the game.")
 
