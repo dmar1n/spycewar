@@ -72,7 +72,8 @@
                 "max_speed": 0.5,
                 "acceleration": 0.004,
                 "rotation_speed": 1.8,
-                "hyperspace_cooldown": 5000,
+                "hyperspace_cooldown": 3000,
+                "hyperspace_speed": 0.7,
                 "max_shield": 5000
             },
             "player2": {
@@ -83,7 +84,8 @@
                 "max_speed": 0.4,
                 "acceleration": 0.005,
                 "rotation_speed": 2.0,
-                "hyperspace_cooldown": 10000,
+                "hyperspace_cooldown": 5000,
+                "hyperspace_speed": 0.6,
                 "max_shield": 6000
             }
         },

@@ -48,6 +48,11 @@ class Player(GameObject):
         self.__controls = PlayerControls.load_controls(player)
         self.__cooldown = 0.0
         self.__hyperspace_cooldown = 0.0
+        self.__is_hyperspacing = False
+        self.__hyperspace_start = Vector2()
+        self.__hyperspace_end = Vector2()
+        self.__hyperspace_elapsed = 0.0
+        self.__hyperspace_duration = 0.0
         self.__rotated_image = self.image
         self.__last_angle = self.__ship_state.angle
         self.__debug_font = None
@@ -108,6 +113,11 @@ class Player(GameObject):
         """Return whether the player can receive damage."""
         return not (self.__ship_state.is_shield_enabled and self.state.shield > 0)
 
+    @property
+    def is_hyperspacing(self) -> bool:
+        """Return whether the player is in hyperspace."""
+        return self.__is_hyperspacing
+
     def handle_input(self, key: int, is_pressed: bool) -> None:
         """Handle the player input events to control the player object.
 
@@ -123,7 +133,12 @@ class Player(GameObject):
             self.__ship_state.is_turning_right = is_pressed
         if key == self.__controls.shield:
             self.__ship_state.is_shield_enabled = is_pressed
-        if key == self.__controls.hyperspace and is_pressed and (self.hyperspace_cooldown <= 0.0):
+        if (
+            key == self.__controls.hyperspace
+            and is_pressed
+            and (self.hyperspace_cooldown <= 0.0)
+            and not self.__is_hyperspacing
+        ):
             self.__hyperspace()
         if key == self.__controls.fire and self.cooldown <= 0.0 and is_pressed:
             self.__fire()
@@ -158,22 +173,27 @@ class Player(GameObject):
         """
         if not self._position:
             return
-        if self.__ship_state.is_accelerating:
-            self.__update_velocity()
-            self.__thrust()
-        if self.__ship_state.is_turning_left:
-            self.__ship_state.angle += self.__specs.rotation_speed
-        if self.__ship_state.is_turning_right:
-            self.__ship_state.angle -= self.__specs.rotation_speed
-        if self.__ship_state.is_shield_enabled and self.state.shield > 0:
-            self.__shield(delta_time)
-        self._position += self.__ship_state.velocity * delta_time
-        self.__ship_state.speed = self.__ship_state.velocity.length()
+        if self.__is_hyperspacing:
+            self.__update_hyperspace(delta_time)
+            if self.__ship_state.is_shield_enabled and self.state.shield > 0:
+                self.__shield(delta_time)
+        else:
+            if self.__ship_state.is_accelerating:
+                self.__update_velocity()
+                self.__thrust()
+            if self.__ship_state.is_turning_left:
+                self.__ship_state.angle += self.__specs.rotation_speed
+            if self.__ship_state.is_turning_right:
+                self.__ship_state.angle -= self.__specs.rotation_speed
+            if self.__ship_state.is_shield_enabled and self.state.shield > 0:
+                self.__shield(delta_time)
+            self._position += self.__ship_state.velocity * delta_time
+            self.__ship_state.speed = self.__ship_state.velocity.length()
+            self.__update_rect()
         if self.cooldown >= 0.0:
             self.cooldown -= delta_time
         if self.hyperspace_cooldown >= 0.0:
             self.hyperspace_cooldown -= delta_time
-        self.__update_rect()
         if self.state.health <= 0:
             logger.debug("%s died.", self)
             dead_event = Event(USEREVENT, event=Events.PLAYER_DIED, player=self)
@@ -203,6 +223,9 @@ class Player(GameObject):
                     surface_dst.get_width() - 100,
                     surface_dst.get_height() - 100,
                 )
+        if self.__is_hyperspacing:
+            self.__render_hyperspace_trail(surface_dst)
+            return
         self.__normalise_angle()
         self.__rotate_image()
         self.__wrap_position(surface_dst)
@@ -298,16 +321,86 @@ class Player(GameObject):
         elif self.__ship_state.angle < 0:
             self.__ship_state.angle += 360
 
+    def __start_hyperspace(self, start: Vector2, end: Vector2) -> None:
+        """Start a hyperspace jump from the start to the end position."""
+        self.__hyperspace_start = start.copy()
+        self.__hyperspace_end = end.copy()
+        self._position = start.copy()
+        distance = self.__hyperspace_start.distance_to(self.__hyperspace_end)
+        if distance <= 0.0 or self.__specs.hyperspace_speed <= 0.0:
+            self._position = self.__hyperspace_end.copy()
+            self.__is_hyperspacing = False
+            self.__update_rect()
+            return
+        self.__hyperspace_elapsed = 0.0
+        self.__hyperspace_duration = distance / self.__specs.hyperspace_speed
+        self.__is_hyperspacing = True
+        self.__ship_state.speed = 0.0
+        self.rect = pygame.Rect(-1000, -1000, 0, 0)
+
+    def __update_hyperspace(self, delta_time: float) -> None:
+        """Update the hyperspace travel progress."""
+        if not self.__is_hyperspacing:
+            return
+        self.__hyperspace_elapsed += delta_time
+        if self.__hyperspace_duration <= 0.0 or self.__hyperspace_elapsed >= self.__hyperspace_duration:
+            self._position = self.__hyperspace_end.copy()
+            self.__is_hyperspacing = False
+            self.__ship_state.velocity = Vector2(0, 0)
+            self.__ship_state.speed = 0.0
+            self.__update_rect()
+
+    def __render_hyperspace_trail(self, surface_dst: Surface) -> None:
+        """Render the hyperspace dotted trail."""
+        if not self.__is_hyperspacing:
+            return
+        trail_color = (120, 150, 200)
+        dot_radius = 1
+        dot_spacing = 10
+        direction_vector = self.__hyperspace_end - self.__hyperspace_start
+        total_distance = direction_vector.length()
+        if total_distance <= 0.0:
+            return
+        progress = 1.0
+        if self.__hyperspace_duration > 0.0:
+            progress = min(self.__hyperspace_elapsed / self.__hyperspace_duration, 1.0)
+        travel_distance = total_distance * progress
+        if travel_distance <= 0.0:
+            return
+        direction = direction_vector.normalize()
+        steps = int(travel_distance // dot_spacing)
+        for i in range(steps + 1):
+            offset = i * dot_spacing
+            if offset > travel_distance:
+                break
+            dot_pos = self.__hyperspace_start + direction * offset
+            pygame.draw.circle(
+                surface_dst,
+                trail_color,
+                (int(dot_pos.x), int(dot_pos.y)),
+                dot_radius,
+            )
+        head_pos = self.__hyperspace_start + direction * travel_distance
+        pygame.draw.circle(
+            surface_dst,
+            trail_color,
+            (int(head_pos.x), int(head_pos.y)),
+            dot_radius + 1,
+        )
+
     def __hyperspace(self) -> None:
         """Hyperspace the player to a random position on the screen."""
+        if not self._position or self.__is_hyperspacing:
+            return
         old_position = self._position.copy()
         self.hyperspace_cooldown = self.__specs.hyperspace_cooldown
         self.__ship_state.velocity = Vector2(0, 0)
-        self._position = Vector2(
+        new_position = Vector2(
             randint(20, get_cfg("game", "screen_size")[0] - 20),
             randint(20, get_cfg("game", "screen_size")[1] - 20),
         )
-        logger.debug("%s hyperspace from %s to %s.", self, old_position, self._position)
+        self.__start_hyperspace(old_position, new_position)
+        logger.debug("%s hyperspace from %s to %s.", self, old_position, new_position)
 
     def __fire(self) -> None:
         """Fire a projectile from the player's position.
