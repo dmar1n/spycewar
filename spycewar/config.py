@@ -52,6 +52,7 @@ def set_cfg(*args: str, value: Any) -> None:
         for arg in args[:-1]:
             data = data[arg]
         data[args[-1]] = value
+        logger.debug("Configuration updated at path %s: %s", args, value)
     except KeyError as e:
         logger.error("Configuration key not found: %s (from path: %s)", e, args)
         raise
@@ -114,6 +115,8 @@ class Config:
 
     def reload(self) -> None:
         """Reload the configuration from the file."""
+        logger.debug("Reloading configuration.")
+        get_cfg.cache_clear()
         self.__load_config()
 
     def __get_internal_path(self) -> Path:
@@ -129,9 +132,16 @@ class Config:
 
     def __load_config_from_json(self, file_path: Path) -> None:
         """Load the configuration from a file."""
-        logger.info("Loading configuration from: %s", file_path)
-        with open(Path(file_path), encoding="utf_8") as file:
-            self.__settings = json.load(file)
+        logger.debug("Loading configuration from: %s", file_path)
+        try:
+            with open(Path(file_path), encoding="utf_8") as file:
+                self.__settings = json.load(file)
+        except FileNotFoundError:
+            logger.error("Configuration file not found: %s", file_path)
+            self.__settings = {}
+        except json.JSONDecodeError as e:
+            logger.error("Invalid JSON in configuration file %s: %s", file_path, e)
+            self.__settings = {}
 
 
 def main() -> int:

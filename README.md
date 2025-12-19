@@ -130,9 +130,3 @@ To install dependencies and run the game using [uv](https://github.com/astral-sh
    ```sh
    python -m spycewar
    ```
-
-If you update dependencies in `pyproject.toml`, re-run:
-
-```sh
-uv pip install .
-```

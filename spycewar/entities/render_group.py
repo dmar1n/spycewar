@@ -31,7 +31,7 @@ class RenderGroup(Group):
     def __init__(self) -> None:
         """Initialise the RenderGroup."""
         super().__init__()
-        logger.info("RenderGroup initialized.")
+        logger.debug("RenderGroup %s initialized", id(self))
 
     def handle_input(self, key: pygame.key, is_pressed: bool) -> None:
         """Pass input events to all sprites in the group.
@@ -42,7 +42,7 @@ class RenderGroup(Group):
             key: The key associated with the input event.
             is_pressed: Boolean indicating if the key is pressed.
         """
-        for sprite in self.sprites():
+        for sprite in self:
             sprite.handle_input(key, is_pressed)
 
     def process_events(self, event: Event) -> None:
@@ -53,7 +53,7 @@ class RenderGroup(Group):
         Args:
             event: The Pygame event to process.
         """
-        for sprite in self.sprites():
+        for sprite in self:
             sprite.process_events(event)
 
     def render(self, surface_dst: Surface) -> None:
@@ -64,7 +64,7 @@ class RenderGroup(Group):
         Args:
             surface_dst: The Pygame surface to render sprites onto.
         """
-        for sprite in self.sprites():
+        for sprite in self:
             sprite.render(surface_dst)
 
     def release(self) -> None:
@@ -72,5 +72,5 @@ class RenderGroup(Group):
 
         Used for cleaning up resources.
         """
-        for sprite in self.sprites():
+        for sprite in self:
             sprite.release()

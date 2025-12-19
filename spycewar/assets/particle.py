@@ -28,7 +28,7 @@ class Particle(Sprite):
     ) -> None:
         """Initialise the particle with position, direction, radius, and fade rate."""
         super().__init__(groups)
-        self.__position = position.xy
+        self.__position = Vector2(position)
         self.__direction = direction
         self.__radius = radius
         self.__fade_rate = fade

@@ -50,8 +50,10 @@ class Player(GameObject):
         self.__hyperspace_cooldown = 0.0
         self.__rotated_image = self.image
         self.__last_angle = self.__ship_state.angle
-        logger.info("%s created with specs: %s", player, self.__specs)
-        self.__get_mask()
+        self.__debug_font = None
+        logger.debug("%s created with specs: %s", player, self.__specs)
+        self.__update_mask()
+        self.__update_rect()
 
     def __str__(self) -> str:
         return f"{self.state.player_id.name} (health: {self.state.health}, position: {self._position})."
@@ -129,9 +131,19 @@ class Player(GameObject):
     def process_events(self, event: Event) -> None:
         """Process events for other parts of the app."""
         if self.can_be_damaged and (event.event == Events.PLAYER_HIT and event.player == self):
+            previous_health = self.state.health
             self.state.take_damage(event.damage)
-        if event.event == Events.HEALTH_POWERUP_PICKUP:
+            logger.debug(
+                "%s took %d damage (health %d -> %d).",
+                self,
+                event.damage,
+                previous_health,
+                self.state.health,
+            )
+        if event.event == Events.HEALTH_POWERUP_PICKUP and event.player == self:
             self.state.heal(event.value)
+            logger.debug("%s picked up health powerup: +%d health.", self, event.value)
+            logger.debug("%s health is now %d.", self, self.state.health)
         if event.event == Events.SHIELD_ACTIVATED and event.player == self:
             self.__ship_state.is_shield_enabled = True
 
@@ -161,7 +173,7 @@ class Player(GameObject):
             self.cooldown -= delta_time
         if self.hyperspace_cooldown >= 0.0:
             self.hyperspace_cooldown -= delta_time
-        self.__get_mask()
+        self.__update_rect()
         if self.state.health <= 0:
             logger.debug("%s died.", self)
             dead_event = Event(USEREVENT, event=Events.PLAYER_DIED, player=self)
@@ -195,6 +207,7 @@ class Player(GameObject):
         self.__rotate_image()
         self.__wrap_position(surface_dst)
         image_rect = self.__rotated_image.get_rect(center=self._position)
+        self.rect = image_rect
         surface_dst.blit(self.__rotated_image, image_rect)
         if self.__ship_state.is_shield_enabled and self.state.shield > 0:
             pygame.draw.circle(
@@ -211,13 +224,12 @@ class Player(GameObject):
     def release(self) -> None:
         """Release the player object and its resources."""
 
-    def __get_mask(self) -> None:
-        """Get the mask of the player's image."""
-        self.rect = self.__rotated_image.get_rect()
-        self.rect.topleft = (
-            self._position.x - self.rect.width // 2,
-            self._position.y - self.rect.height // 2,
-        )
+    def __update_rect(self) -> None:
+        """Update the player's rect based on the current position and image."""
+        self.rect = self.__rotated_image.get_rect(center=self._position)
+
+    def __update_mask(self) -> None:
+        """Update the mask of the player's current image."""
         self.mask = pygame.mask.from_surface(self.__rotated_image)
 
     def __render_player_info(self, surface_dst: Surface) -> None:
@@ -227,7 +239,9 @@ class Player(GameObject):
             surface_dst: The surface to render the player's information to.
         """
         x = 10 if self.state.player_id == PlayerId.PLAYER1 else surface_dst.get_width() - 250
-        font = initialise_font("eurostile.ttf", 14)
+        if self.__debug_font is None:
+            self.__debug_font = initialise_font("eurostile.ttf", 14)
+        font = self.__debug_font
         surface_dst.blit(
             render_text(font, f"Speed: {self.__ship_state.speed:.2f}"),
             (x, 30),
@@ -275,6 +289,7 @@ class Player(GameObject):
                 self.__ship_state.angle,
             )
             self.__last_angle = self.__ship_state.angle
+            self.__update_mask()
 
     def __normalise_angle(self) -> None:
         """Normalise the angle to be between 0 and 360 degrees."""
@@ -285,12 +300,14 @@ class Player(GameObject):
 
     def __hyperspace(self) -> None:
         """Hyperspace the player to a random position on the screen."""
+        old_position = self._position.copy()
         self.hyperspace_cooldown = self.__specs.hyperspace_cooldown
         self.__ship_state.velocity = Vector2(0, 0)
         self._position = Vector2(
             randint(20, get_cfg("game", "screen_size")[0] - 20),
             randint(20, get_cfg("game", "screen_size")[1] - 20),
         )
+        logger.debug("%s hyperspace from %s to %s.", self, old_position, self._position)
 
     def __fire(self) -> None:
         """Fire a projectile from the player's position.
@@ -301,6 +318,12 @@ class Player(GameObject):
         self.cooldown = self.__specs.projectile_cooldown
         projectile_velocity, fire_position = self.__compute_trajectory(
             speed=self.__specs.projectile_speed,
+        )
+        logger.debug(
+            "%s fired projectile from %s with velocity %s.",
+            self,
+            fire_position,
+            projectile_velocity,
         )
         fire_event = Event(
             USEREVENT,

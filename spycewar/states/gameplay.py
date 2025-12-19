@@ -197,6 +197,12 @@ class Gameplay(State):
         """
         projectile = ProjectileFactory.create_projectile(player, position, velocity)
         self.__projectiles.add(projectile)
+        logger.debug(
+            "Spawned projectile for %s at %s with velocity %s.",
+            player,
+            position,
+            velocity,
+        )
 
     def __spawn_thrust(self, position: Vector2, direction: Vector2) -> None:
         """Spawn a thrust at the given position.
@@ -206,6 +212,7 @@ class Gameplay(State):
             direction: The direction of the thrust.
         """
         self.__thrusts.add(Thrust(position, direction))
+        logger.debug("Spawned thrust at %s with direction %s.", position, direction)
 
     def __kill_projectile(self, projectile: Projectile) -> None:
         """Remove the given projectile from the game.
@@ -216,6 +223,7 @@ class Gameplay(State):
         if projectile in self.__projectiles:
             self.__projectiles.remove(projectile)
             del projectile
+            logger.debug("Projectile removed from the game.")
         else:
             logger.error("Trying to remove a projectile that is not in the game.")
 
@@ -250,7 +258,7 @@ class Gameplay(State):
             player: The player to remove.
         """
         if player in self.__players:
-            logger.info("Player %s died.", player)
+            logger.debug("Player %s died.", player)
             self.__players.remove(player)
             del player
         else:
@@ -287,7 +295,7 @@ class Gameplay(State):
                     self.__kill_player(player1)
                     self.__kill_player(player2)
                     self.__game_over()
-                    logger.info("Player hit by player (mask)!")
+                    logger.debug("Player hit by player (mask): %s vs %s.", player1, player2)
 
     def __detect_player_vs_projectile(self) -> None:
         """Detect collisions between the players and the projectiles.
@@ -298,34 +306,43 @@ class Gameplay(State):
         The projectile is removed from the game if it hits a player; then, it is still necessary to
         check if the player is still in the game (results group).
         """
-        for player in groupcollide(
+        rect_hits = groupcollide(
             self.__players,
             self.__projectiles,
             False,
             False,
             collide_rect,
-        ):
+        )
+        for player, projectiles in rect_hits.items():
             if player.is_shielded and player.state.shield > 0:
                 continue
-            if (
-                results := groupcollide(
-                    self.__players,
-                    self.__projectiles,
-                    False,
-                    True,
-                    collide_mask,
-                )
-            ) and player in results:
-                self.__spawn_explosion(results[player][0].pos)
-                damage = results[player][0].damage
-                hit_event = Event(
-                    USEREVENT,
-                    event=Events.PLAYER_HIT,
-                    player=player,
-                    damage=damage,
-                )
-                pygame.event.post(hit_event)
-                logger.info("Player hit by projectile (mask)!")
+            hit_projectile = None
+            projectiles_to_remove = []
+            for projectile in projectiles:
+                if collide_mask(player, projectile):
+                    if hit_projectile is None:
+                        hit_projectile = projectile
+                    projectiles_to_remove.append(projectile)
+            if hit_projectile is None:
+                continue
+            for projectile in projectiles_to_remove:
+                if projectile in self.__projectiles:
+                    self.__projectiles.remove(projectile)
+            self.__spawn_explosion(hit_projectile.pos)
+            damage = hit_projectile.damage
+            logger.debug(
+                "%s hit by %s for %d damage.",
+                player,
+                type(hit_projectile).__name__,
+                damage,
+            )
+            hit_event = Event(
+                USEREVENT,
+                event=Events.PLAYER_HIT,
+                player=player,
+                damage=damage,
+            )
+            pygame.event.post(hit_event)
 
     def __detect_player_vs_powerup(self) -> None:
         """Detect collisions between the players and the power-ups.
@@ -333,24 +350,24 @@ class Gameplay(State):
         For efficiency reasons, we only check for mask collisions if the collision is first
         detected by the rectangle.
         """
-        for player in groupcollide(
+        results = groupcollide(
             self.__players,
             self.__powerups,
             False,
-            False,
-            collide_rect,
-        ):
-            powerup_value = self.__powerups.sprites()[0].value
-            if groupcollide(self.__players, self.__powerups, False, True, collide_mask):
-                powerup_event = Event(
-                    USEREVENT,
-                    event=Events.HEALTH_POWERUP_PICKUP,
-                    player=player,
-                    value=powerup_value,
-                )
-                pygame.event.post(powerup_event)
-                self.__powerups.add(Powerup())
-                logger.info("Player %s picked up powerup!", player)
+            True,
+            collide_mask,
+        )
+        for player, powerups in results.items():
+            powerup_value = powerups[0].value
+            powerup_event = Event(
+                USEREVENT,
+                event=Events.HEALTH_POWERUP_PICKUP,
+                player=player,
+                value=powerup_value,
+            )
+            pygame.event.post(powerup_event)
+            self.__powerups.add(Powerup())
+            logger.debug("Player %s picked up powerup (%s).", player, powerup_value)
 
     def __spawn_explosion(self, position: Vector2) -> None:
         """Spawns an explosion at the given position.
@@ -358,14 +375,14 @@ class Gameplay(State):
         Args:
             position: The position to spawn the explosion at.
         """
-        logger.info("Explosion at %s", position)
+        logger.debug("Explosion at %s", position)
         self.__explosions.add(Explosion(position))
 
     def __game_over(self, trigger_delay: int = 3000) -> None:
         """Post gameover event with some delay after the kill."""
         logger.info("Game over event triggered.")
         winner = self.__players.sprites()[0].player_id.name if len(self.__players) == 1 else None
-        logger.info("Winner: %s", winner)
+        logger.debug("Winner: %s", winner)
         self.context.set_data(winner=winner)
         gameover_event = Event(USEREVENT, event=Events.GAMEOVER, color=(0, 0, 0))
         pygame.time.set_timer(gameover_event, trigger_delay, 1)

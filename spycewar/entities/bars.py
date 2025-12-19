@@ -39,13 +39,14 @@ class BarBase:
             self._empty_color,
             (self._x, self._y, self._width, self._height),
         )
+        fill_width = max(0.0, min(1.0, ratio)) * self._width - 2
         rect(
             surface_dst,
             color,
             (
                 self._x + 1,
                 self._y + 1,
-                self._width * ratio - 2,
+                max(0, fill_width),
                 self._height - 2,
             ),
         )
