@@ -17,6 +17,7 @@ from spycewar.entities.powerup import Powerup
 from spycewar.entities.projectiles.factory import ProjectileFactory
 from spycewar.entities.projectiles.projectile import Projectile
 from spycewar.entities.render_group import RenderGroup
+from spycewar.entities.ships.hyperspace_bar import HyperspaceBar
 from spycewar.entities.ships.shield_bar import ShieldBar
 from spycewar.entities.ships.thruster import Thrust
 from spycewar.enums.states import GameState
@@ -47,14 +48,17 @@ class Gameplay(State):
         self.__thrusts = RenderGroup()
         self.__heath_bars = RenderGroup()
         self.__shield_bars = RenderGroup()
+        self.__hyperspace_bars = RenderGroup()
         self.__powerups = RenderGroup()
 
     def enter(self, context: GameContext) -> None:
         """Reset the state to indicate the game is not done when entering the gameplay state."""
         logger.info("Entering gameplay state...")
         self.done = False
-        self.__players.add(Player(PlayerId.PLAYER1))
-        self.__players.add(Player(PlayerId.PLAYER2))
+        player1 = Player(PlayerId.PLAYER1)
+        player2 = Player(PlayerId.PLAYER2)
+        self.__players.add(player1)
+        self.__players.add(player2)
         self.__heath_bars.add(HealthBar(PlayerId.PLAYER1, 10, 10))
         self.__heath_bars.add(
             HealthBar(
@@ -71,6 +75,14 @@ class Gameplay(State):
                 30,
             ),
         )
+        self.__hyperspace_bars.add(HyperspaceBar(player1, 10, 40))
+        self.__hyperspace_bars.add(
+            HyperspaceBar(
+                player2,
+                int(os.environ[SCREEN_WIDTH_ENV_VAR]) - 160,
+                40,
+            ),
+        )
         self.__powerups.add(Powerup())
         self.context = context
 
@@ -85,6 +97,7 @@ class Gameplay(State):
         self.__thrusts.empty()
         self.__heath_bars.empty()
         self.__shield_bars.empty()
+        self.__hyperspace_bars.empty()
         self.__powerups.empty()
         return self.context
 
@@ -126,6 +139,7 @@ class Gameplay(State):
         self.__thrusts.update(delta_time)
         self.__heath_bars.update(delta_time)
         self.__shield_bars.update(delta_time)
+        self.__hyperspace_bars.update(delta_time)
         self.__powerups.update(delta_time)
         self.__detect_collisions()
 
@@ -141,6 +155,7 @@ class Gameplay(State):
         self.__thrusts.render(surface_dst)
         self.__heath_bars.render(surface_dst)
         self.__shield_bars.render(surface_dst)
+        self.__hyperspace_bars.render(surface_dst)
         self.__powerups.render(surface_dst)
 
     def release(self) -> None:
@@ -155,6 +170,7 @@ class Gameplay(State):
         self.__thrusts.release()
         self.__heath_bars.release()
         self.__shield_bars.release()
+        self.__hyperspace_bars.release()
         self.__powerups.release()
 
     def __handle_events(self, event: Event) -> None:
