@@ -208,8 +208,25 @@ class Gameplay(State):
         for player_id, controller in self.__ai_controllers.items():
             player = player1 if player_id == PlayerId.PLAYER1 else player2
             opponent = player2 if player_id == PlayerId.PLAYER1 else player1
-            control_state = controller.decide(player, opponent, delta_time)
+            powerup_pos = self.__nearest_powerup_position(player)
+            control_state = controller.decide(player, opponent, delta_time, powerup_pos)
             player.apply_controls(control_state)
+
+    def __nearest_powerup_position(self, player: Player) -> Vector2 | None:
+        """Return the nearest active powerup position to the player."""
+        if player.pos.length_squared() <= 0.0:
+            return None
+        nearest_pos = None
+        nearest_distance = None
+        for powerup in self.__powerups:
+            powerup_pos = powerup.pos
+            if powerup_pos is None:
+                continue
+            distance_sq = (powerup_pos - player.pos).length_squared()
+            if nearest_distance is None or distance_sq < nearest_distance:
+                nearest_distance = distance_sq
+                nearest_pos = powerup_pos
+        return nearest_pos
 
     def __handle_events(self, event: Event) -> None:
         """Handle game events for the gameplay state.
@@ -251,12 +268,6 @@ class Gameplay(State):
         """
         projectile = ProjectileFactory.create_projectile(player, position, velocity)
         self.__projectiles.add(projectile)
-        logger.debug(
-            "Spawned projectile for %s at %s with velocity %s.",
-            player,
-            position,
-            velocity,
-        )
 
     def __spawn_thrust(self, position: Vector2, direction: Vector2) -> None:
         """Spawn a thrust at the given position.
@@ -266,7 +277,6 @@ class Gameplay(State):
             direction: The direction of the thrust.
         """
         self.__thrusts.add(Thrust(position, direction))
-        logger.debug("Spawned thrust at %s with direction %s.", position, direction)
 
     def __kill_projectile(self, projectile: Projectile) -> None:
         """Remove the given projectile from the game.
@@ -277,7 +287,6 @@ class Gameplay(State):
         if projectile in self.__projectiles:
             self.__projectiles.remove(projectile)
             del projectile
-            logger.debug("Projectile removed from the game.")
         else:
             logger.error("Trying to remove a projectile that is not in the game.")
 

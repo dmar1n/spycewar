@@ -48,7 +48,7 @@
                 "ai": {
                     "enabled": false,
                     "controller": "predictive",
-                    "aggression": 0.5
+                    "aggression": 0.8
                 }
             },
             "random_start_position": false
@@ -59,18 +59,18 @@
                     "spycewar.assets.images",
                     "generic_projectile.png"
                 ],
-                "base_damage": 30,
-                "speed": 0.4,
-                "cooldown": 70
+                "base_damage": 20,
+                "speed": 0.2,
+                "cooldown": 300
             },
             "player2": {
                 "file": [
                     "spycewar.assets.images",
                     "generic_projectile.png"
                 ],
-                "base_damage": 35,
-                "speed": 0.5,
-                "cooldown": 100
+                "base_damage": 25,
+                "speed": 0.18,
+                "cooldown": 350
             }
         },
         "ships": {
