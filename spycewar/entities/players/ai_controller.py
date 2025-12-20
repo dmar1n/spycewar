@@ -23,7 +23,7 @@ MAX_REACTION_TIME_MS = 250.0
 CLOSING_SPEED_THRESHOLD = -0.02
 EVADE_DISTANCE_BASE = 0.50
 EVADE_DISTANCE_SCALE = 0.08
-EVADE_DISTANCE_JITTER = 0.08
+EVADE_DISTANCE_JITTER = 0.5
 CLOSING_SPEED_JITTER = 0.01
 PREFERRED_DISTANCE_DEFENSIVE = 0.45
 PREFERRED_DISTANCE_AGGRESSIVE = 0.60
@@ -228,7 +228,11 @@ class PredictiveAIController:
 
     @staticmethod
     def __should_hyperspace(player: Player, should_evade: bool) -> bool:
-        return should_evade and player.hyperspace_cooldown <= 0.0
+        """Decide whether to hyperspace based on evasion need and cooldown.
+
+        The decision might be delayed to avoid hyperspacing too frequently.
+        """
+        return should_evade and player.hyperspace_cooldown <= 0.0 and random.choice([True, False])
 
     def __lead_direction(
         self,

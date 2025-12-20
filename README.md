@@ -8,6 +8,8 @@
 
 ## Description
 
+![demo](.\assets\images\spycewar_demo.gif)
+
 Spycewar is a game inspired by the classic *Spacewar!*, probably the first video game in history. It was designed in 1961 by Martin Graetz, Stephen Russell, and Wayne Wiitanen, and implemented for the PDP-1 computer in 1962.
 
 In the original game, two players battle each other, each controlling a spaceship navigating around a central star with gravitational pull. Players can fire missiles, rotate and thrust their ships, and use a hyperspace jump button.
@@ -91,10 +93,8 @@ A typical state pattern does not allow for direct data sharing between states. H
 
 Future extensions and enhancements for *Spycewar!* could include:
 
-- AI implementation for single-player mode.
 - Fuel and ammunition bars, with corresponding power-ups.
 - A central star with gravitational force, as in the original game.
-- Critical hit system (inspired by RPGs).
 - Sound effects for propulsion, collisions, and firing.
 - A complex scoring system spanning multiple rounds.
 - Display of damage numbers, RPG-style.

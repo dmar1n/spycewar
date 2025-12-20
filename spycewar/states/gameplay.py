@@ -10,6 +10,7 @@ from pygame.sprite import collide_mask, collide_rect, groupcollide
 
 from spycewar.constants import SCREEN_WIDTH_ENV_VAR
 from spycewar.entities.explosion import Explosion
+from spycewar.entities.players.ai_badge import AIBadge
 from spycewar.entities.players.ai_controller import (
     PlayerController,
     ai_is_enabled,
@@ -54,6 +55,7 @@ class Gameplay(State):
         self.__heath_bars = RenderGroup()
         self.__shield_bars = RenderGroup()
         self.__hyperspace_bars = RenderGroup()
+        self.__ai_badges = RenderGroup()
         self.__powerups = RenderGroup()
         self.__ai_controllers: dict[PlayerId, PlayerController] = {}
         self.__player_by_id: dict[PlayerId, Player] = {}
@@ -71,30 +73,29 @@ class Gameplay(State):
             PlayerId.PLAYER2: player2,
         }
         self.__setup_ai_controllers()
-        self.__heath_bars.add(HealthBar(PlayerId.PLAYER1, 10, 10))
+        left_x = 10
+        right_x = int(os.environ[SCREEN_WIDTH_ENV_VAR]) - 160
+        self.__heath_bars.add(HealthBar(PlayerId.PLAYER1, left_x, 10))
         self.__heath_bars.add(
-            HealthBar(
-                PlayerId.PLAYER2,
-                int(os.environ[SCREEN_WIDTH_ENV_VAR]) - 160,
-                10,
-            ),
+            HealthBar(PlayerId.PLAYER2, right_x, 10),
         )
-        self.__shield_bars.add(ShieldBar(PlayerId.PLAYER1, 10, 30))
+        self.__shield_bars.add(ShieldBar(PlayerId.PLAYER1, left_x, 30))
         self.__shield_bars.add(
-            ShieldBar(
-                PlayerId.PLAYER2,
-                int(os.environ[SCREEN_WIDTH_ENV_VAR]) - 160,
-                30,
-            ),
+            ShieldBar(PlayerId.PLAYER2, right_x, 30),
         )
-        self.__hyperspace_bars.add(HyperspaceBar(player1, 10, 40))
+        self.__hyperspace_bars.add(HyperspaceBar(player1, left_x, 40))
         self.__hyperspace_bars.add(
             HyperspaceBar(
                 player2,
-                int(os.environ[SCREEN_WIDTH_ENV_VAR]) - 160,
+                right_x,
                 40,
             ),
         )
+        ai_badge_y = 50
+        if ai_is_enabled(PlayerId.PLAYER1):
+            self.__ai_badges.add(AIBadge(PlayerId.PLAYER1, left_x, ai_badge_y))
+        if ai_is_enabled(PlayerId.PLAYER2):
+            self.__ai_badges.add(AIBadge(PlayerId.PLAYER2, right_x, ai_badge_y))
         self.__powerups.add(Powerup())
         self.context = context
 
@@ -110,6 +111,7 @@ class Gameplay(State):
         self.__heath_bars.empty()
         self.__shield_bars.empty()
         self.__hyperspace_bars.empty()
+        self.__ai_badges.empty()
         self.__powerups.empty()
         self.__ai_controllers.clear()
         self.__player_by_id.clear()
@@ -157,6 +159,7 @@ class Gameplay(State):
         self.__heath_bars.update(delta_time)
         self.__shield_bars.update(delta_time)
         self.__hyperspace_bars.update(delta_time)
+        self.__ai_badges.update(delta_time)
         self.__powerups.update(delta_time)
         self.__detect_collisions()
 
@@ -173,6 +176,7 @@ class Gameplay(State):
         self.__heath_bars.render(surface_dst)
         self.__shield_bars.render(surface_dst)
         self.__hyperspace_bars.render(surface_dst)
+        self.__ai_badges.render(surface_dst)
         self.__powerups.render(surface_dst)
 
     def release(self) -> None:
@@ -188,6 +192,7 @@ class Gameplay(State):
         self.__heath_bars.release()
         self.__shield_bars.release()
         self.__hyperspace_bars.release()
+        self.__ai_badges.release()
         self.__powerups.release()
 
     def __setup_ai_controllers(self) -> None:
@@ -288,7 +293,7 @@ class Gameplay(State):
             self.__projectiles.remove(projectile)
             del projectile
         else:
-            logger.error("Trying to remove a projectile that is not in the game.")
+            logger.warning("Trying to remove a projectile that is not in the game.")
 
     def __kill_thrust(self, thrust: Thrust) -> None:
         """Remove the given thrust from the game.
@@ -300,7 +305,7 @@ class Gameplay(State):
             self.__thrusts.remove(thrust)
             del thrust
         else:
-            logger.error("Trying to remove a thrust that is not in the game.")
+            logger.warning("Trying to remove a thrust that is not in the game.")
 
     def __kill_explosion(self, explosion: Explosion) -> None:
         """Remove the given explosion from the game.
@@ -312,7 +317,7 @@ class Gameplay(State):
             self.__explosions.remove(explosion)
             del explosion
         else:
-            logger.error("Trying to remove an explosion that is not in the game.")
+            logger.warning("Trying to remove an explosion that is not in the game.")
 
     def __kill_player(self, player: Player) -> None:
         """Remove the given player from the game.
@@ -393,12 +398,6 @@ class Gameplay(State):
                     self.__projectiles.remove(projectile)
             self.__spawn_explosion(hit_projectile.pos)
             damage = hit_projectile.damage
-            logger.debug(
-                "%s hit by %s for %d damage.",
-                player,
-                type(hit_projectile).__name__,
-                damage,
-            )
             hit_event = Event(
                 USEREVENT,
                 event=Events.PLAYER_HIT,
@@ -438,7 +437,6 @@ class Gameplay(State):
         Args:
             position: The position to spawn the explosion at.
         """
-        logger.debug("Explosion at %s", position)
         self.__explosions.add(Explosion(position))
 
     def __game_over(self, trigger_delay: int = 3000) -> None:
