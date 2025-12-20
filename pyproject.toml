@@ -1,6 +1,6 @@
 [project]
 name = "spycewar"
-version = "1.3.0"
+version = "1.3.1"
 description = "A game inspired by Spacewar!"
 authors = [{ name = "Daniel Marín" }]
 readme = "README.md"
