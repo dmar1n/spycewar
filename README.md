@@ -8,7 +8,7 @@
 
 ## Description
 
-![demo](.\assets\images\spycewar_demo.gif)
+![demo](./spycewar/assets/images/spycewar_demo.gif)
 
 Spycewar is a game inspired by the classic *Spacewar!*, probably the first video game in history. It was designed in 1961 by Martin Graetz, Stephen Russell, and Wayne Wiitanen, and implemented for the PDP-1 computer in 1962.
 
