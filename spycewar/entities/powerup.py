@@ -67,9 +67,13 @@ class Powerup(GameObject):
         if event.event == Events.HEALTH_POWERUP_PICKUP:
             logger.info("Health power-up collected!")
             self.__spawned = False
+            self._position = None
+            self.rect = pygame.Rect(0, 0, 0, 0)
         if event.event == Events.HEALTH_POWERUP_REMOVAL:
             logger.info("Health power-up removed!")
             self.__spawned = False
+            self._position = None
+            self.rect = pygame.Rect(0, 0, 0, 0)
 
     def update(self, delta_time: float) -> None:
         """Update the powerup."""

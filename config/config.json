@@ -27,6 +27,11 @@
                     "right": "d",
                     "hyperspace": "q",
                     "shield": "e"
+                },
+                "ai": {
+                    "enabled": true,
+                    "controller": "predictive",
+                    "aggression": 0.65
                 }
             },
             "player2": {
@@ -39,6 +44,11 @@
                     "right": "l",
                     "hyperspace": "u",
                     "shield": "o"
+                },
+                "ai": {
+                    "enabled": false,
+                    "controller": "predictive",
+                    "aggression": 0.6
                 }
             },
             "random_start_position": false
@@ -49,18 +59,18 @@
                     "spycewar.assets.images",
                     "generic_projectile.png"
                 ],
-                "base_damage": 30,
-                "speed": 0.4,
-                "cooldown": 70
+                "base_damage": 20,
+                "speed": 0.5,
+                "cooldown": 80
             },
             "player2": {
                 "file": [
                     "spycewar.assets.images",
                     "generic_projectile.png"
                 ],
-                "base_damage": 35,
-                "speed": 0.5,
-                "cooldown": 100
+                "base_damage": 25,
+                "speed": 0.4,
+                "cooldown": 90
             }
         },
         "ships": {
@@ -69,10 +79,11 @@
                     "spycewar.assets.images",
                     "player1.png"
                 ],
-                "max_speed": 0.5,
-                "acceleration": 0.004,
-                "rotation_speed": 1.8,
-                "hyperspace_cooldown": 5000,
+                "max_speed": 0.18,
+                "acceleration": 0.005,
+                "rotation_speed": 2.0,
+                "hyperspace_cooldown": 12000,
+                "hyperspace_speed": 0.7,
                 "max_shield": 5000
             },
             "player2": {
@@ -80,11 +91,12 @@
                     "spycewar.assets.images",
                     "player2.png"
                 ],
-                "max_speed": 0.4,
-                "acceleration": 0.005,
-                "rotation_speed": 2.0,
+                "max_speed": 0.2,
+                "acceleration": 0.004,
+                "rotation_speed": 1.8,
                 "hyperspace_cooldown": 10000,
-                "max_shield": 6000
+                "hyperspace_speed": 0.5,
+                "max_shield": 4500
             }
         },
         "powerups": {
