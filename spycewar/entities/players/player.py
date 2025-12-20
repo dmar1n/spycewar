@@ -62,7 +62,7 @@ class Player(GameObject):
         self.__update_rect()
 
     def __str__(self) -> str:
-        return f"{self.state.player_id.name} (health: {self.state.health}, position: {self._position})."
+        return f"{self.state.player_id.name} (health: {self.state.health}, position: {self._position})"
 
     @cached_property
     def player_id(self) -> PlayerId:
@@ -179,7 +179,7 @@ class Player(GameObject):
             )
         if event.event == Events.HEALTH_POWERUP_PICKUP and event.player == self:
             self.state.heal(event.value)
-            logger.debug("%s picked up health powerup: +%d health.", self, event.value)
+            logger.debug("%s picked up health power-up: +%d health.", self, event.value)
             logger.debug("%s health is now %d.", self, self.state.health)
         if event.event == Events.SHIELD_ACTIVATED and event.player == self:
             self.__ship_state.is_shield_enabled = True
@@ -422,7 +422,6 @@ class Player(GameObject):
             randint(20, get_cfg("game", "screen_size")[1] - 20),
         )
         self.__start_hyperspace(old_position, new_position)
-        logger.debug("%s hyperspace from %s to %s.", self, old_position, new_position)
 
     def __fire(self) -> None:
         """Fire a projectile from the player's position.
@@ -433,12 +432,6 @@ class Player(GameObject):
         self.cooldown = self.__specs.projectile_cooldown
         projectile_velocity, fire_position = self.__compute_trajectory(
             speed=self.__specs.projectile_speed,
-        )
-        logger.debug(
-            "%s fired projectile from %s with velocity %s.",
-            self,
-            fire_position,
-            projectile_velocity,
         )
         fire_event = Event(
             USEREVENT,

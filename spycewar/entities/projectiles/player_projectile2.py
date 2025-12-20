@@ -1,5 +1,6 @@
 """Module for the projectile class."""
 
+
 from pygame import Surface, Vector2
 
 from spycewar.config import get_cfg
@@ -39,8 +40,4 @@ class PlayerProjectile2(Projectile):
     @property
     def damage(self) -> int:
         """Damage of the projectile."""
-        return self.__base_damage
-
-    def render(self, surface_dst: Surface) -> None:
-        """Render the projectile on the given surface."""
-        surface_dst.blit(self.image, self._position)
+        return self.calculate_damage(self.__base_damage)

@@ -1,5 +1,7 @@
 """Module for the Projectile class."""
 
+from random import randint, random
+
 import pygame
 from pygame import Surface
 from pygame.event import Event
@@ -8,6 +10,11 @@ from pygame.math import Vector2
 
 from spycewar.entities.game_object import GameObject
 from spycewar.events import Events
+from spycewar.logger import get_logger
+
+CRITICAL_HIT_CHANCE = 0.1
+
+logger = get_logger()
 
 
 class Projectile(GameObject):
@@ -77,6 +84,24 @@ class Projectile(GameObject):
             pygame.event.post(kill_event)
         self.rect = self.image.get_rect()
         self.rect.topleft = self._position
+
+    def calculate_damage(self, base_damage: int) -> int:
+        """Calculate the damage of the projectile.
+
+        Args:
+            base_damage: the base damage of the projectile.
+
+        Returns:
+            The calculated damage of the projectile.
+        """
+        critical_hit = random() <= CRITICAL_HIT_CHANCE
+        modifier = randint(-2, 3)
+        if critical_hit:
+            damage = (base_damage * 2) + modifier
+            logger.info("Critical hit!!! Damage: %d", damage)
+        else:
+            damage = base_damage + modifier
+        return damage
 
     def render(self, surface_dst: Surface) -> None:
         """Render the projectile to the given surface at the projectile's position."""
